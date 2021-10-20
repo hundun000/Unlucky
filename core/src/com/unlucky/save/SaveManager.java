@@ -18,7 +18,9 @@ import com.unlucky.resource.ResourceManager;
  *
  * @author Ming Li
  */
-public class Save {
+public class SaveManager {
+    
+    static final boolean SAVE_FILE_BASE64 = false;
 
     // for saving and loading
     private Player player;
@@ -26,7 +28,7 @@ public class Save {
     private Json json;
     private FileHandle file;
 
-    public Save(Player player, String path) {
+    public SaveManager(Player player, String path) {
         this.player = player;
         psave = new PlayerAccessor();
         json = new Json();
@@ -43,7 +45,8 @@ public class Save {
         // load player data
         psave.load(player);
         // write data to save json
-        file.writeString(Base64Coder.encodeString(json.prettyPrint(psave)), false);
+        String dataString = SAVE_FILE_BASE64 ? Base64Coder.encodeString(json.prettyPrint(psave)) : json.prettyPrint(psave);
+        file.writeString(dataString, false);
     }
 
     /**
@@ -51,8 +54,11 @@ public class Save {
      * loads the data into the game through the player
      */
     public void load(ResourceManager rm) {
-        if (!file.exists()) save();
-        psave = json.fromJson(PlayerAccessor.class, Base64Coder.decodeString(file.readString()));
+        if (!file.exists()) {
+            save();
+        }
+        String jsonString = SAVE_FILE_BASE64 ? Base64Coder.decodeString(file.readString()) : file.readString();
+        psave = json.fromJson(PlayerAccessor.class, jsonString);
 
         // load atomic fields
         player.setHp(psave.hp);

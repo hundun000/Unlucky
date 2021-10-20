@@ -13,6 +13,12 @@ buildscript {
 allprojects {
     apply plugin: "eclipse"
     apply plugin: "idea"
+    apply plugin: "java"
+
+    java {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
 
     version = '1.0'
     ext {

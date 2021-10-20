@@ -138,12 +138,12 @@ public class Hud extends UI {
         if (touchDown) {
             dirTime += dt;
             // quick tap to change direction
-            if (dirTime > 0 && dirTime <= 0.15f) player.getAm().setAnimation(dirIndex);
+            if (dirTime > 0 && dirTime <= 0.15f) player.getSelfAnimation().setAnimation(dirIndex);
             // move the player
             else movePlayer(dirIndex);
         }
         else {
-            player.getAm().stopAnimation();
+            player.getSelfAnimation().stopAnimation();
         }
 
         if (ld) {
@@ -425,7 +425,7 @@ public class Hud extends UI {
     }
 
     private void movePlayer(int dir) {
-        if (player.canMove()) player.getAm().setAnimation(dir);
+        if (player.canMove()) player.getSelfAnimation().setAnimation(dir);
         if (player.canMove() && !player.nextTileBlocked(dir)) {
             player.move(dir);
         }

@@ -4,7 +4,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Pool;
-import com.unlucky.animation.AnimationManager;
+import com.unlucky.animation.AnimationComponent;
 
 /**
  * A particle that has velocity
@@ -30,10 +30,10 @@ public class Particle implements Pool.Poolable {
     // for static particles
     public TextureRegion sprite;
     // for animated particles
-    public AnimationManager anim;
+    public AnimationComponent anim;
 
     // a particle's "death" animation which is played after the particle should be removed
-    public AnimationManager deathAnim;
+    public AnimationComponent deathAnim;
 
     // a particle's lifespan
     public float lifespan;
@@ -54,7 +54,7 @@ public class Particle implements Pool.Poolable {
      * @param velocity
      * @param lifespan
      */
-    public void init(int type, Vector2 position, Vector2 velocity, float lifespan, TextureRegion sprite, AnimationManager deathAnim) {
+    public void init(int type, Vector2 position, Vector2 velocity, float lifespan, TextureRegion sprite, AnimationComponent deathAnim) {
         shouldRemove = false;
         this.type = type;
         this.position = position;

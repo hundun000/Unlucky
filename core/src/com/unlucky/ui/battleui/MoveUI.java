@@ -134,7 +134,7 @@ public class MoveUI extends BattleUI {
     public void resetMoves() {
         player.getMoveset().reset(player.getMinDamage(), player.getMaxDamage(), player.getMaxHp());
         for (int i = 0; i < 4; i++) {
-            moveButtons[i].setStyle(moveStyles[player.getMoveset().moveset[i].type]);
+            moveButtons[i].setStyle(moveStyles[player.getMoveset().moveset[i].type.getCode()]);
             moveNameLabels[i].setText(player.getMoveset().names[i]);
             moveDescLabels[i].setText(player.getMoveset().descriptions[i]);
         }
@@ -174,7 +174,7 @@ public class MoveUI extends BattleUI {
 
         // Match the Button styles to their Move
         for (int i = 0; i < 4; i++) {
-            moveButtons[i] = new ImageButton(moveStyles[player.getMoveset().moveset[i].type]);
+            moveButtons[i] = new ImageButton(moveStyles[player.getMoveset().moveset[i].type.getCode()]);
         }
         // set positions
         moveButtons[0].setPosition(0, Util.MOVE_HEIGHT);

@@ -9,7 +9,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
  *
  * @author Ming Li
  */
-public class AnimationManager {
+public class AnimationComponent {
 
     public float width;
     public float height;
@@ -29,7 +29,7 @@ public class AnimationManager {
      * @param numFrames the amount of frames in the single animation
      * @param delay
      */
-    public AnimationManager(TextureRegion[][] sprites, int numFrames, int index, float delay) {
+    public AnimationComponent(TextureRegion[][] sprites, int numFrames, int index, float delay) {
         TextureRegion[] frames = new TextureRegion[numFrames];
 
         width = sprites[index][0].getRegionWidth();
@@ -52,7 +52,7 @@ public class AnimationManager {
      * @param numFrames
      * @param delay
      */
-    public AnimationManager(TextureRegion[][] sprites, int worldIndex, int startIndex, int numFrames, float delay) {
+    public AnimationComponent(TextureRegion[][] sprites, int worldIndex, int startIndex, int numFrames, float delay) {
         TextureRegion[] frames = new TextureRegion[numFrames];
 
         width = sprites[worldIndex][startIndex].getRegionWidth();
@@ -72,7 +72,7 @@ public class AnimationManager {
      * @param index
      * @param delay
      */
-    public AnimationManager(TextureRegion[][] sprites, int index, float delay) {
+    public AnimationComponent(TextureRegion[][] sprites, int index, float delay) {
         animations = new CustomAnimation[4];
         animationFrames = new TextureRegion[4][4];
 

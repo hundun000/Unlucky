@@ -6,7 +6,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
-import com.unlucky.animation.AnimationManager;
+import com.unlucky.animation.AnimationComponent;
 import com.unlucky.resource.ResourceManager;
 import com.unlucky.resource.Util;
 
@@ -110,7 +110,7 @@ public class ParticleFactory {
                 float rls = MathUtils.random(0.4f, 1.4f);
                 particleVelocity.set(this.velocity.x,
                         Util.getDeviatedRandomValue((int) this.velocity.y, Util.RAINDROP_Y_DEVIATED));
-                AnimationManager rainAnim = new AnimationManager(rm.raindropAnim16x16, 3, 0, 1 / 6f);
+                AnimationComponent rainAnim = new AnimationComponent(rm.raindropAnim16x16, 3, 0, 1 / 6f);
                 item.init(type, weatherParticleSpawnPosition, particleVelocity, rls, rm.raindrop, rainAnim);
                 break;
             case Particle.SNOWFLAKE:

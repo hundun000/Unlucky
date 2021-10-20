@@ -42,15 +42,17 @@ public class Moveset {
         for (int i = 0; i < 4; i++) {
             // reset damage seed for a new value between player's dmg range each iteration
             dmg = MathUtils.random(min, max);
-            if (moveset[i].type == 3) moveset[i].setHeal(hp);
+            if (moveset[i].type == MoveType.HEALING) {
+                moveset[i].setHeal(hp);
+            }
             else moveset[i].setDamage(dmg);
 
             names[i] = moveset[i].name;
             // Concatenates move info into a full description
-            if (moveset[i].type < 2) {
+            if (moveset[i].type.isAccurateOrWide()) {
                 descriptions[i] = "dmg: " + Math.round(moveset[i].minDamage)
                         + "-" + Math.round(moveset[i].maxDamage);
-            } else if (moveset[i].type == 2) {
+            } else if (moveset[i].type == MoveType.CRIT) {
                 descriptions[i] = "dmg: " + Math.round(moveset[i].minDamage) + " + "
                         + moveset[i].crit + "% to crit";
             } else {
@@ -69,8 +71,12 @@ public class Moveset {
         int dmg;
         for (int i = 0; i < 4; i++) {
             dmg = MathUtils.random(min, max);
-            if (moveset[i].type == 3) moveset[i].setHeal(hp);
-            else moveset[i].setDamage(dmg);
+            if (moveset[i].type == MoveType.HEALING) {
+                moveset[i].setHeal(hp);
+            }
+            else {
+                moveset[i].setDamage(dmg);
+            }
         }
     }
 
@@ -82,7 +88,7 @@ public class Moveset {
      */
     public Move getDamagePriority() {
         for (int i = 0; i < moveset.length; i++) {
-            if (moveset[i].type != 3) {
+            if (moveset[i].type != MoveType.HEALING) {
                 return moveset[i];
             }
         }
@@ -97,7 +103,7 @@ public class Moveset {
      */
     public Move getHealPriority() {
         for (int i = 0; i < moveset.length; i++) {
-            if (moveset[i].type == 3) {
+            if (moveset[i].type == MoveType.HEALING) {
                 return moveset[i];
             }
         }
@@ -124,11 +130,11 @@ public class Moveset {
             Move randMove = all.get(index);
             Move temp = null;
 
-            if (randMove.type < 2)
+            if (randMove.type.isAccurateOrWide())
                 temp = new Move(randMove.type, randMove.name, randMove.minDamage, randMove.maxDamage);
-            else if (randMove.type == 2)
+            else if (randMove.type == MoveType.CRIT)
                 temp = new Move(randMove.name, randMove.minDamage, randMove.crit);
-            else if (randMove.type == 3)
+            else if (randMove.type == MoveType.HEALING)
                 temp = new Move(randMove.name, randMove.minHeal, randMove.maxHeal, randMove.dmgReduction);
 
             ret[i] = temp;
@@ -153,11 +159,11 @@ public class Moveset {
             Move randMove = pool.get(index);
             Move temp = null;
 
-            if (randMove.type < 2)
+            if (randMove.type.isAccurateOrWide())
                 temp = new Move(randMove.type, randMove.name, randMove.minDamage, randMove.maxDamage);
-            else if (randMove.type == 2)
+            else if (randMove.type == MoveType.CRIT)
                 temp = new Move(randMove.name, randMove.minDamage, randMove.crit);
-            else if (randMove.type == 3)
+            else if (randMove.type == MoveType.HEALING)
                 temp = new Move(randMove.name, randMove.minHeal, randMove.maxHeal, randMove.dmgReduction);
 
             ret[i] = temp;

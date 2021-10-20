@@ -1,5 +1,8 @@
 package com.unlucky.ui.battleui;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -9,7 +12,8 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.unlucky.animation.AnimationManager;
+import com.unlucky.animation.AnimationComponent;
+import com.unlucky.battle.MoveType;
 import com.unlucky.effects.Moving;
 import com.unlucky.effects.Particle;
 import com.unlucky.effects.ParticleFactory;
@@ -51,8 +55,8 @@ public class BattleScene extends BattleUI {
     private final Vector2 ENEMY_ORIGIN = new Vector2(200, 50);
 
     // battle animations
-    private AnimationManager[] attackAnims;
-    private AnimationManager healAnim;
+    private Map<MoveType, AnimationComponent> attackAnims;
+    private AnimationComponent healAnim;
 
     // blinking hit animation
     private boolean showHitAnim = false;
@@ -116,11 +120,11 @@ public class BattleScene extends BattleUI {
         enemySprite = new Moving(ENEMY_ORIGIN, new Vector2(120, 50), 75.f);
 
         // create animations
-        attackAnims = new AnimationManager[3];
+        attackAnims = new HashMap<>();
         for (int i = 0; i < 3; i++) {
-            attackAnims[i] = new AnimationManager(rm.battleAttacks64x64, 3, i, 1 / 6f);
+            attackAnims.put(MoveType.fromCode(i), new AnimationComponent(rm.battleAttacks64x64, 3, i, 1 / 6f));
         }
-        healAnim = new AnimationManager(rm.battleHeal96x96, 3, 0, 1 / 5f);
+        healAnim = new AnimationComponent(rm.battleHeal96x96, 3, 0, 1 / 5f);
 
         factory = new ParticleFactory((OrthographicCamera) stage.getCamera(), rm);
 
@@ -201,8 +205,8 @@ public class BattleScene extends BattleUI {
         if (gameScreen.gameMap.weather != WeatherType.NORMAL) factory.update(dt);
 
         // entity sprite animations
-        player.getBam().update(dt);
-        if (battle.opponent.getBam() != null) battle.opponent.getBam().update(dt);
+        player.getBattleAnimation().update(dt);
+        if (battle.opponent.getBattleAnimation() != null) battle.opponent.getBattleAnimation().update(dt);
 
         playerSprite.update(dt);
         enemySprite.update(dt);
@@ -260,8 +264,8 @@ public class BattleScene extends BattleUI {
             enemyHudLabel.setPosition(enemyHud.getX() + 6, enemyHud.getY() + 10);
         }
 
-        if (player.getMoveUsed() != -1) updateBattleAnimations(player, dt);
-        if (battle.opponent.getMoveUsed() != -1) updateBattleAnimations(battle.opponent, dt);
+        if (player.getMoveUsed() != null) updateBattleAnimations(player, dt);
+        if (battle.opponent.getMoveUsed() != null) updateBattleAnimations(battle.opponent, dt);
     }
 
     /**
@@ -272,10 +276,10 @@ public class BattleScene extends BattleUI {
      */
     private void updateBattleAnimations(Entity entity, float dt) {
         // damaging moves
-        if (entity.getMoveUsed() < 3 && entity.getMoveUsed() >= 0) {
-            if (attackAnims[entity.getMoveUsed()].currentAnimation.isAnimationFinished()) {
-                attackAnims[entity.getMoveUsed()].currentAnimation.stop();
-                entity.setMoveUsed(-1);
+        if (entity.getMoveUsed() != null && entity.getMoveUsed().isAttack()) {
+            if (attackAnims.get(entity.getMoveUsed()).currentAnimation.isAnimationFinished()) {
+                attackAnims.get(entity.getMoveUsed()).currentAnimation.stop();
+                entity.setMoveUsed(null);
                 sfxPlaying = false;
                 // start hit animation
                 showHitAnim = true;
@@ -283,13 +287,13 @@ public class BattleScene extends BattleUI {
                 if (entity == player) lastHit = 0;
                 else lastHit = 1;
             } else {
-                if (entity.getMoveUsed() == 0) {
+                if (entity.getMoveUsed() == MoveType.ACCURATE) {
                     if (!player.settings.muteSfx && !sfxPlaying) {
                         rm.blueattack.play(player.settings.sfxVolume);
                         sfxPlaying = true;
                     }
                 }
-                else if (entity.getMoveUsed() == 1) {
+                else if (entity.getMoveUsed() == MoveType.WIDE) {
                     if (!player.settings.muteSfx && !sfxPlaying) {
                         rm.redattack.play(player.settings.sfxVolume);
                         sfxPlaying = true;
@@ -301,15 +305,15 @@ public class BattleScene extends BattleUI {
                         sfxPlaying = true;
                     }
                 }
-                attackAnims[entity.getMoveUsed()].update(dt);
+                attackAnims.get(entity.getMoveUsed()).update(dt);
             }
         }
         // heal
-        else if (entity.getMoveUsed() == 3 && entity.getMoveUsed() >= 0) {
+        else if (entity.getMoveUsed() == MoveType.HEALING) {
             if (healAnim.currentAnimation.isAnimationFinished()) {
                 sfxPlaying = false;
                 healAnim.currentAnimation.stop();
-                entity.setMoveUsed(-1);
+                entity.setMoveUsed(null);
             } else {
                 if (!player.settings.muteSfx && !sfxPlaying) {
                     rm.heal.play(player.settings.sfxVolume);
@@ -323,10 +327,10 @@ public class BattleScene extends BattleUI {
     public void render(float dt) {
         gameScreen.getBatch().begin();
         if (renderPlayer) {
-            gameScreen.getBatch().draw(player.getBam().getKeyFrame(true), playerSprite.position.x, playerSprite.position.y);
+            gameScreen.getBatch().draw(player.getBattleAnimation().getKeyFrame(true), playerSprite.position.x, playerSprite.position.y);
         }
         if (renderEnemy) {
-            TextureRegion r = battle.opponent.getBam().getKeyFrame(true);
+            TextureRegion r = battle.opponent.getBattleAnimation().getKeyFrame(true);
             if (battle.opponent.isBoss()) {
                 gameScreen.getBatch().draw(r, enemySprite.position.x + (48 - battle.opponent.battleSize) / 2, enemySprite.position.y,
                         battle.opponent.battleSize, battle.opponent.battleSize);
@@ -338,18 +342,18 @@ public class BattleScene extends BattleUI {
 
         // render attack or heal animations
         // player side
-        if (player.getMoveUsed() != -1) {
-            if (player.getMoveUsed() < 3) {
-                gameScreen.getBatch().draw(attackAnims[player.getMoveUsed()].getKeyFrame(false), 127, 57);
-            } else if (player.getMoveUsed() == 3) {
+        if (player.getMoveUsed() != null) {
+            if (player.getMoveUsed().isAttack()) {
+                gameScreen.getBatch().draw(attackAnims.get(player.getMoveUsed()).getKeyFrame(false), 127, 57);
+            } else if (player.getMoveUsed() == MoveType.HEALING) {
                 gameScreen.getBatch().draw(healAnim.getKeyFrame(false), 35, 50);
             }
         }
         // enemy side
-        if (battle.opponent.getMoveUsed() != -1) {
-            if (battle.opponent.getMoveUsed() < 3) {
-                gameScreen.getBatch().draw(attackAnims[battle.opponent.getMoveUsed()].getKeyFrame(false), 42, 57);
-            } else if (battle.opponent.getMoveUsed() == 3) {
+        if (battle.opponent.getMoveUsed() != null) {
+            if (battle.opponent.getMoveUsed().isAttack()) {
+                gameScreen.getBatch().draw(attackAnims.get(battle.opponent.getMoveUsed()).getKeyFrame(false), 42, 57);
+            } else if (battle.opponent.getMoveUsed() == MoveType.HEALING) {
                 gameScreen.getBatch().draw(healAnim.getKeyFrame(false), 120, 50);
             }
         }

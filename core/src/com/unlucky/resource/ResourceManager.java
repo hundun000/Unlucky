@@ -16,6 +16,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import com.unlucky.battle.Move;
+import com.unlucky.battle.MoveType;
 import com.unlucky.inventory.Item;
 import com.unlucky.inventory.ShopItem;
 import com.unlucky.map.Level;
@@ -341,14 +342,14 @@ public class ResourceManager {
 
         // accurate Moves
         for (JsonValue move : base.get("accurate")) {
-            Move m = new Move(move.getInt("type"), move.getString("name"),
+            Move m = new Move(MoveType.fromCode(move.getInt("type")), move.getString("name"),
                     move.getFloat("minDamage"), move.getFloat("maxDamage"));
             accurateMoves.add(m);
         }
         //System.out.println("accurate: " + accurateMoves.size);
         // wide Moves
         for (JsonValue move : base.get("wide")) {
-            Move m = new Move(move.getInt("type"), move.getString("name"),
+            Move m = new Move(MoveType.fromCode(move.getInt("type")), move.getString("name"),
                     move.getFloat("minDamage"), move.getFloat("maxDamage"));
             wideMoves.add(m);
         }
@@ -371,7 +372,7 @@ public class ResourceManager {
         // load boss moves
         for (JsonValue move : boss.get("slime")) {
             if (move.getInt("type") == 1)
-                slimeMoves.add(new Move(1, move.getString("name"),
+                slimeMoves.add(new Move(MoveType.fromCode(1), move.getString("name"),
                         move.getFloat("minDamage"), move.getFloat("maxDamage")));
             else
                 slimeMoves.add(new Move(move.getString("name"),
@@ -394,7 +395,7 @@ public class ResourceManager {
         Array<Move> igMoves = new Array<Move>();
         for (JsonValue move : boss.get("icegolem")) {
             if (move.getInt("type") == 0)
-                igMoves.add(new Move(0, move.getString("name"),
+                igMoves.add(new Move(MoveType.fromCode(0), move.getString("name"),
                     move.getFloat("minDamage"), move.getFloat("maxDamage")));
         }
         bossMoves.add(igMoves);

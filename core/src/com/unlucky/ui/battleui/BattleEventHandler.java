@@ -21,6 +21,7 @@ import com.unlucky.map.WeatherType;
 import com.unlucky.resource.ResourceManager;
 import com.unlucky.resource.Util;
 import com.unlucky.screen.GameScreen;
+import com.unlucky.ui.battleui.DialogList.TextCycleState;
 import com.unlucky.event.BattleState;
 
 /**
@@ -35,7 +36,7 @@ import com.unlucky.event.BattleState;
 public class BattleEventHandler extends BattleUI {
 
     private Stage stage;
-    private float stateTime = 0;
+
 
     // the ui for displaying text
     private Image ui;
@@ -45,15 +46,14 @@ public class BattleEventHandler extends BattleUI {
     private Label clickLabel;
 
     // text animation
-    private String currentText = "";
-    private String[] currentDialog = new String[0];
-    private int dialogIndex = 0;
-    private String[] anim;
-    private String resultingText = "";
-    private int animIndex = 0;
+    private DialogList dialogList;
 
-    private boolean beginCycle = false;
-    private boolean endCycle = false;
+
+    
+    
+
+//    private boolean beginCycle = false;
+//    private boolean endCycle = false;
     private BattleEvent prevEvent = BattleEvent.NONE;
     private BattleEvent nextEvent = BattleEvent.NONE;
 
@@ -96,27 +96,30 @@ public class BattleEventHandler extends BattleUI {
         clickLabel.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                if (dialogIndex + 1 == currentDialog.length && endCycle) {
-                    if (!p.settings.muteSfx) rm.textprogression.play(p.settings.sfxVolume);
-                    // the text animation has run through every element of the text array
-                    endDialog();
-                    handleBattleEvent(nextEvent);
-                }
-                // after a cycle of text animation ends, clicking the UI goes to the next cycle
-                else if (endCycle && dialogIndex < currentDialog.length) {
-                    if (!p.settings.muteSfx) rm.textprogression.play(p.settings.sfxVolume);
-                    dialogIndex++;
-                    reset();
-                    currentText = currentDialog[dialogIndex];
-                    anim = currentText.split("");
-                    beginCycle = true;
-                }
-                // clicking on the box during a text animation completes it early
-                else if (beginCycle && !endCycle) {
-                    resultingText = currentText;
-                    textLabel.setText(resultingText);
-                    beginCycle = false;
-                    endCycle = true;
+                switch (dialogList.getCycleState()) {
+                    case DONE:
+                        if (!dialogList.hasNext()) {
+                            if (!p.settings.muteSfx) {
+                                rm.textprogression.play(p.settings.sfxVolume);
+                            }
+                            // the text animation has run through every element of the text array
+                            endDialogList();
+                            handleBattleEvent(nextEvent);
+                        // after a cycle of text animation ends, clicking the UI goes to the next cycle
+                        } else {
+                            if (!p.settings.muteSfx) {
+                                rm.textprogression.play(p.settings.sfxVolume);
+                            }
+                            dialogList.startNext();
+                            
+                        }
+                        break;
+                    // clicking on the box during a text animation completes it early
+                    case CYCLING: 
+                        dialogList.completeShowCurrentDialog();
+                        textLabel.setText(dialogList.getResultingText());
+                    default:
+                        break;
                 }
             }
         });
@@ -136,56 +139,36 @@ public class BattleEventHandler extends BattleUI {
         clickLabel.setVisible(true);
         clickLabel.setTouchable(Touchable.enabled);
 
-        currentDialog = dialog;
-        currentText = currentDialog[0];
-        anim = currentText.split("");
+        dialogList = new DialogList(dialog, Util.TEXT_SPEED);
+        
+        
 
         prevEvent = prev;
         nextEvent = next;
-        beginCycle = true;
+        
     }
 
-    public void endDialog() {
-        reset();
+    public void endDialogList() {
+        dialogList = null;
+        textLabel.setText("");
         ui.setVisible(false);
         textLabel.setVisible(false);
         clickLabel.setVisible(false);
         clickLabel.setTouchable(Touchable.disabled);
-        dialogIndex = 0;
-        currentDialog = new String[0];
     }
 
-    /**
-     * Reset all variables
-     */
-    public void reset() {
-        stateTime = 0;
-        currentText = "";
-        textLabel.setText("");
-        resultingText = "";
-        animIndex = 0;
-        anim = new String[0];
-        beginCycle = false;
-        endCycle = false;
-    }
+
 
     public void update(float dt) {
-        if (beginCycle) {
-            stateTime += dt;
-
-            if (animIndex >= anim.length) endCycle = true;
-            // a new character is appended to the animation every TEXT_SPEED delta time
-            if (stateTime > Util.TEXT_SPEED && animIndex < anim.length && !endCycle) {
-                resultingText += anim[animIndex];
-                textLabel.setText(resultingText);
-                animIndex++;
-                stateTime = 0;
-            }
+        if (dialogList != null) {
+            dialogList.update(dt);
+            textLabel.setText(dialogList.getResultingText());
         }
     }
 
     public void render(float dt) {
-        if (endCycle) {
+        // special ui for State.DONE
+        if (dialogList != null && dialogList.getCycleState() == TextCycleState.DONE) {
             // blinking indicator
             posTime += dt;
             if (posTime >= 0.5f) {
@@ -246,13 +229,13 @@ public class BattleEventHandler extends BattleUI {
                     if (battle.buffs[Util.REFLECT]) {
                         battle.resetBuffs();
                         // double heal
-                        if (battle.opponent.getPrevMoveUsed() != -1) {
+                        if (battle.opponent.getPrevMoveUsed() != null) {
                             battle.opponent.applyHeal();
                         }
                         // damage move
                         else {
                             player.setMoveUsed(player.getPrevMoveUsed());
-                            player.setPrevMoveUsed(-1);
+                            player.setPrevMoveUsed(null);
                             if (applyEnemyDamage()) return;
                         }
                     }
@@ -314,8 +297,8 @@ public class BattleEventHandler extends BattleUI {
         // player dead
         if (player.isDead()) {
             // reset animation
-            battle.opponent.setPrevMoveUsed(-1);
-            battle.opponent.setMoveUsed(-1);
+            battle.opponent.setPrevMoveUsed(null);
+            battle.opponent.setMoveUsed(null);
             player.resetShield();
             battle.resetBuffs();
             player.statusEffects.clear();
@@ -358,8 +341,8 @@ public class BattleEventHandler extends BattleUI {
         // enemy dead
         if (battle.opponent.isDead()) {
             // reset animation
-            player.setPrevMoveUsed(-1);
-            player.setMoveUsed(-1);
+            player.setPrevMoveUsed(null);
+            player.setMoveUsed(null);
             player.statusEffects.clear();
             battle.resetBuffs();
 

@@ -2,7 +2,8 @@ package com.unlucky.entity;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
-import com.unlucky.animation.AnimationManager;
+import com.unlucky.animation.AnimationComponent;
+import com.unlucky.battle.MoveType;
 import com.unlucky.battle.Moveset;
 import com.unlucky.map.Tile;
 import com.unlucky.map.TileMap;
@@ -19,10 +20,10 @@ public abstract class Entity {
     protected ResourceManager rm;
 
     // animation
-    protected AnimationManager am;
-    protected boolean pauseAnim = false;
+    protected AnimationComponent selfAnimation;
+    protected boolean pauseSelfAnimation = false;
     // battle scene animation
-    protected AnimationManager bam;
+    protected AnimationComponent battleAnimation;
 
     // position (x,y) in map coordinates (tile * tileSize)
     protected Vector2 position;
@@ -58,9 +59,8 @@ public abstract class Entity {
     // level up information
     protected int level;
 
-    // move type used default -1
-    protected int prevMoveUsed = -1;
-    protected int moveUsed = -1;
+    protected MoveType prevMoveUsed = null;
+    protected MoveType moveUsed = null;
 
     public Entity(String id, ResourceManager rm) {
         this.id = id;
@@ -77,19 +77,23 @@ public abstract class Entity {
 
     public void update(float dt) {
         // handle RPG elements
-        if (hp > maxHp) hp = maxHp;
+        if (hp > maxHp) {
+            hp = maxHp;
+        }
         if (hp <= 0) {
             hp = 0;
         }
 
         // animation
-        if (!pauseAnim) am.update(dt);
+        if (!pauseSelfAnimation) {
+            selfAnimation.update(dt);
+        }
     }
 
     public void render(SpriteBatch batch, boolean looping) {
         // draw shadow
         batch.draw(rm.shadow11x6, position.x + 3, position.y - 3);
-        batch.draw(am.getKeyFrame(looping), position.x, position.y);
+        batch.draw(selfAnimation.getKeyFrame(looping), position.x, position.y);
     }
 
     /**
@@ -140,7 +144,7 @@ public abstract class Entity {
             }
             prevShield = shield;
             moveUsed = prevMoveUsed;
-            prevMoveUsed = -1;
+            prevMoveUsed = null;
 
             // if the damage breaks through the shield then the player's hp bar is damaged
             if (shield - damage < 0) {
@@ -161,7 +165,7 @@ public abstract class Entity {
         }
         else {
             moveUsed = prevMoveUsed;
-            prevMoveUsed = -1;
+            prevMoveUsed = null;
             damageHp();
         }
     }
@@ -179,10 +183,12 @@ public abstract class Entity {
     public void applyHeal() {
         previousHp = hp;
         moveUsed = prevMoveUsed;
-        prevMoveUsed = -1;
+        prevMoveUsed = null;
         hp += healing;
         healing = 0;
-        if (hp > maxHp) hp = maxHp;
+        if (hp > maxHp) {
+            hp = maxHp;
+        }
     }
 
     public void setMap(TileMap map) {
@@ -202,9 +208,9 @@ public abstract class Entity {
         this.position = position;
     }
 
-    public AnimationManager getAm() { return am; }
+    public AnimationComponent getSelfAnimation() { return selfAnimation; }
 
-    public AnimationManager getBam() { return bam; }
+    public AnimationComponent getBattleAnimation() { return battleAnimation; }
 
     public String getId() {
         return id;
@@ -260,19 +266,19 @@ public abstract class Entity {
 
     public void setDead(boolean dead) { this.dead = dead; }
 
-    public int getMoveUsed() { return moveUsed; }
+    public MoveType getMoveUsed() { return moveUsed; }
 
-    public void useMove(int move) {
+    public void useMove(MoveType move) {
         this.prevMoveUsed = move;
     }
 
-    public int getPrevMoveUsed() { return prevMoveUsed; }
+    public MoveType getPrevMoveUsed() { return prevMoveUsed; }
 
-    public void setMoveUsed(int moveUsed) {
+    public void setMoveUsed(MoveType moveUsed) {
         this.moveUsed = moveUsed;
     }
 
-    public void setPrevMoveUsed(int prevMoveUsed) { this.prevMoveUsed = prevMoveUsed; }
+    public void setPrevMoveUsed(MoveType prevMoveUsed) { this.prevMoveUsed = prevMoveUsed; }
 
     /**
      * Returns the tile the Entity is currently standing on

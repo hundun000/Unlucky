@@ -9,7 +9,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
-import com.unlucky.animation.AnimationManager;
+import com.unlucky.animation.AnimationComponent;
 import com.unlucky.entity.Player;
 import com.unlucky.event.EventState;
 import com.unlucky.map.TileMap;
@@ -38,7 +38,7 @@ public class LevelUpScreen extends UI {
     private Label clickToContinue;
 
     // animation
-    private AnimationManager levelUpAnim;
+    private AnimationComponent levelUpAnim;
     private float stateTime = 0;
     private boolean showClick = true;
 
@@ -65,7 +65,7 @@ public class LevelUpScreen extends UI {
         handleClick();
 
         // create animation
-        levelUpAnim = new AnimationManager(rm.levelUp96x96, 4, 0, 1 / 4f);
+        levelUpAnim = new AnimationComponent(rm.levelUp96x96, 4, 0, 1 / 4f);
 
         // create labels
         BitmapFont font = rm.pixel10;

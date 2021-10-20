@@ -27,7 +27,7 @@ public class Move {
     2 - Crit
     3 - Healing
      */
-    public int type;
+    public MoveType type;
 
     // Damage range of a Move
     public float minDamage;
@@ -50,7 +50,7 @@ public class Move {
      * @param min
      * @param max
      */
-    public Move(int type, String name, float min, float max) {
+    public Move(MoveType type, String name, float min, float max) {
         this.type = type;
         this.name = name;
 
@@ -67,7 +67,7 @@ public class Move {
      * @param crit
      */
     public Move(String name, float damage, int crit) {
-        type = 2;
+        type = MoveType.CRIT;
         this.name = name;
 
         minDamage = maxDamage = damage;
@@ -84,7 +84,7 @@ public class Move {
      * @param dmgReduction
      */
     public Move(String name, float min, float max, int dmgReduction) {
-        type = 3;
+        type = MoveType.HEALING;
         this.name = name;
 
         this.minHeal = min;
@@ -99,20 +99,22 @@ public class Move {
      * @param damageSeed is the "average" damage of an Entity calculated from its range
      */
     public void setDamage(float damageSeed) {
-        if (type == 3) return;
+        if (type == MoveType.HEALING) {
+            return;
+        }
 
         // For accurate damage, the min and max Move damage will deviate little from the mean
-        if (type == 0) {
+        if (type == MoveType.ACCURATE) {
             minDamage = damageSeed - (minDamage * (damageSeed / 24));
             maxDamage = damageSeed + (maxDamage * (damageSeed / 24));
         }
         // Wide damage has large deviation from the mean
-        else if (type == 1) {
+        else if (type == MoveType.WIDE) {
             minDamage = damageSeed - (minDamage * (damageSeed / 2));
             maxDamage = damageSeed + (maxDamage * (damageSeed / 12));
         }
         // Crit damage has fixed damage that is less than the mean
-        else if (type == 2) {
+        else if (type == MoveType.CRIT) {
             minDamage = maxDamage = damageSeed - (damageSeed / minDamage);
         }
     }
@@ -123,7 +125,9 @@ public class Move {
      * @param hpSeed max hp of the Entity
      */
     public void setHeal(int hpSeed) {
-        if (type != 3) return;
+        if (type != MoveType.HEALING) {
+            return;
+        }
         minHeal = (hpSeed / 16) * minHeal;
         maxHeal = (hpSeed / 16) * maxHeal;
     }

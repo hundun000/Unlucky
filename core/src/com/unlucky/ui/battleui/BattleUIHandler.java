@@ -35,7 +35,7 @@ public class BattleUIHandler extends UI {
         battleEventHandler = new BattleEventHandler(gameScreen, tileMap, player, battle, this, stage, rm);
 
         moveUI.toggleMoveAndOptionUI(false);
-        battleEventHandler.endDialog();
+        battleEventHandler.endDialogList();
     }
 
     public void update(float dt) {
@@ -70,8 +70,12 @@ public class BattleUIHandler extends UI {
         String[] intro;
         boolean saved = Util.isSuccess(Util.SAVED_FROM_BATTLE);
 
-        if (enemy.isElite()) player.stats.eliteEncountered++;
-        else if (enemy.isBoss()) player.stats.bossEncountered++;
+        if (enemy.isElite()) {
+            player.stats.eliteEncountered++;
+        }
+        else if (enemy.isBoss()) {
+            player.stats.bossEncountered++;
+        }
 
         if (enemy.isBoss()) {
             if (MathUtils.randomBoolean()) {

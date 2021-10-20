@@ -42,7 +42,7 @@ public class GameScreen extends AbstractScreen {
     public InputMultiplexer multiplexer;
 
     // battle background
-    private Background[] bg;
+    private Background[] backgrounds;
 
     // key
     private int worldIndex;
@@ -66,11 +66,11 @@ public class GameScreen extends AbstractScreen {
         dialog = new DialogScreen(this, gameMap.tileMap, gameMap.player, rm);
 
         // create bg
-        bg = new Background[2];
+        backgrounds = new Background[2];
         // sky
-        bg[0] = new Background((OrthographicCamera) battleUIHandler.getStage().getCamera(), new Vector2(0.3f, 0));
+        backgrounds[0] = new Background((OrthographicCamera) battleUIHandler.getStage().getCamera(), new Vector2(0.3f, 0));
         // field
-        bg[1] = new Background((OrthographicCamera) battleUIHandler.getStage().getCamera(), new Vector2(0, 0));
+        backgrounds[1] = new Background((OrthographicCamera) battleUIHandler.getStage().getCamera(), new Vector2(0, 0));
 
 
         // input multiplexer
@@ -123,12 +123,20 @@ public class GameScreen extends AbstractScreen {
     private void createBackground(int bgIndex) {
         // background image array is ordered by depth
         TextureRegion[] images = rm.battleBackgrounds400x240[bgIndex];
-        for (int i = 0; i < 2; i++) bg[i].setImage(images[i]);
+        for (int i = 0; i < 2; i++) {
+            backgrounds[i].setImage(images[i]);
+        }
         // set background movement for the specific worlds
-        if (bgIndex == 0) bg[0].setVector(40, 0);
-        else if (bgIndex == 1) bg[0].setVector(0, 0);
-        else if (bgIndex == 2) bg[0].setVector(40, 0);
-        bg[1].setVector(0, 0);
+        if (bgIndex == 0) {
+            backgrounds[0].setVector(40, 0);
+        }
+        else if (bgIndex == 1) {
+            backgrounds[0].setVector(0, 0);
+        }
+        else if (bgIndex == 2) {
+            backgrounds[0].setVector(40, 0);
+        }
+        backgrounds[1].setVector(0, 0);
     }
 
     /**
@@ -146,21 +154,31 @@ public class GameScreen extends AbstractScreen {
      * Updates the camera position to follow the player unless he's on the edges of the map
      */
     public void updateCamera() {
+        boolean playerNearLeftBottom = gameMap.player.getPosition().x < 6 * 16;
+        boolean playerNearRightBottom = gameMap.player.getPosition().x > gameMap.tileMap.mapWidth * 16 - 7 * 16;
+        boolean playerNearDownBottom =  gameMap.player.getPosition().y < 4 * 16 - 8;
+        boolean playerNearTopBottom = gameMap.player.getPosition().y > gameMap.tileMap.mapHeight * 16 - 4 * 16;
         // camera directs on the player
-        if (gameMap.player.getPosition().x <= gameMap.tileMap.mapWidth * 16 - 7 * 16 &&
-            gameMap.player.getPosition().x >= 6 * 16)
+        if (!playerNearRightBottom && !playerNearLeftBottom) {
             cam.position.x = gameMap.player.getPosition().x + 8;
-        if (gameMap.player.getPosition().y <= gameMap.tileMap.mapHeight * 16 - 4 * 16 &&
-            gameMap.player.getPosition().y >= 4 * 16 - 8)
+        }
+        if (!playerNearTopBottom && !playerNearDownBottom) {
             cam.position.y = gameMap.player.getPosition().y + 4;
+        }
         cam.update();
 
-        if (gameMap.player.getPosition().x < 6 * 16) cam.position.x = 104;
-        if (gameMap.player.getPosition().y < 4 * 16 - 8) cam.position.y = 60.5f;
-        if (gameMap.player.getPosition().x > gameMap.tileMap.mapWidth * 16 - 7 * 16)
+        if (playerNearLeftBottom) {
+            cam.position.x = 104;
+        }
+        if (playerNearDownBottom) {
+            cam.position.y = 60.5f;
+        }
+        if (playerNearRightBottom) {
             cam.position.x = (gameMap.tileMap.mapWidth * 16 - 7 * 16) + 8;
-        if (gameMap.player.getPosition().y > gameMap.tileMap.mapHeight * 16 - 4 * 16)
+        }
+        if (playerNearTopBottom) {
             cam.position.y = (gameMap.tileMap.mapHeight * 16 - 4 * 16) + 4;
+        }
     }
 
     public void update(float dt) {
@@ -178,8 +196,8 @@ public class GameScreen extends AbstractScreen {
 
         if (currentEvent == EventState.BATTLING) {
             // update bg
-            for (int i = 0; i < bg.length; i++) {
-                bg[i].update(dt);
+            for (int i = 0; i < backgrounds.length; i++) {
+                backgrounds[i].update(dt);
             }
             battleUIHandler.update(dt);
         }
@@ -205,8 +223,8 @@ public class GameScreen extends AbstractScreen {
             if (currentEvent == EventState.BATTLING || transition.renderBattle) {
                 // bg camera
                 game.batch.setProjectionMatrix(battleUIHandler.getStage().getCamera().combined);
-                for (int i = 0; i < bg.length; i++) {
-                    bg[i].render(game.batch);
+                for (int i = 0; i < backgrounds.length; i++) {
+                    backgrounds[i].render(game.batch);
                 }
             }
 

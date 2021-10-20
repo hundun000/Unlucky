@@ -94,7 +94,7 @@ public class GameMap {
         goldObtained = 0;
         time = 0;
         player.completedMap = false;
-        player.getAm().setAnimation(0);
+        player.getSelfAnimation().setAnimation(0);
 
         tileMap = new TileMap(16, "maps/w" + worldIndex + "_l" + levelIndex + ".txt", new Vector2(0, 0), rm);
         // set lighting
@@ -240,7 +240,7 @@ public class GameMap {
         }
         // player won the map and switch to victory screen
         if (player.completedMap) {
-            player.getAm().stopAnimation();
+            player.getSelfAnimation().stopAnimation();
             player.setHp(player.getMaxHp());
             player.inMap = false;
             if (!player.settings.muteSfx) rm.finish.play(player.settings.sfxVolume);
@@ -263,7 +263,7 @@ public class GameMap {
             }
             player.stats.numDungeonsWon++;
             player.stats.goldGainedFromMaps += goldObtained;
-            gameScreen.getGame().save.save();
+            gameScreen.getGame().saveManager.save();
 
             gameScreen.setCurrentEvent(EventState.PAUSE);
             player.moving = -1;

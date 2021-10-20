@@ -11,7 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.unlucky.entity.Player;
 import com.unlucky.parallax.Background;
 import com.unlucky.resource.ResourceManager;
-import com.unlucky.save.Save;
+import com.unlucky.save.SaveManager;
 import com.unlucky.screen.*;
 import com.unlucky.screen.game.VictoryScreen;
 import com.unlucky.ui.inventory.InventoryUI;
@@ -47,7 +47,7 @@ public class Unlucky extends Game {
     public Player player;
 
     // Game save
-    public Save save;
+    public SaveManager saveManager;
 
     // Screens
     public MenuScreen menuScreen;
@@ -73,8 +73,8 @@ public class Unlucky extends Game {
         rm = new ResourceManager();
         player = new Player("player", rm);
 
-        save = new Save(player, "save.json");
-        save.load(rm);
+        saveManager = new SaveManager(player, "save.json");
+        saveManager.load(rm);
 
         // debugging
         fps = new Label("", new Label.LabelStyle(rm.pixel10, Color.RED));

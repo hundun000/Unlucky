@@ -3,7 +3,7 @@ package com.unlucky.entity;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
-import com.unlucky.animation.AnimationManager;
+import com.unlucky.animation.AnimationComponent;
 import com.unlucky.battle.Moveset;
 import com.unlucky.battle.SpecialMoveset;
 import com.unlucky.battle.StatusSet;
@@ -109,9 +109,9 @@ public class Player extends Entity {
         maxExp = Util.calculateMaxExp(1, MathUtils.random(3, 5));
 
         // create tilemap animation
-        am = new AnimationManager(rm.sprites16x16, Util.PLAYER_WALKING, Util.PLAYER_WALKING_DELAY);
+        selfAnimation = new AnimationComponent(rm.sprites16x16, Util.PLAYER_WALKING, Util.PLAYER_WALKING_DELAY);
         // create battle scene animation
-        bam = new AnimationManager(rm.battleSprites96x96, 2, Util.PLAYER_WALKING, 2 / 5f);
+        battleAnimation = new AnimationComponent(rm.battleSprites96x96, 2, Util.PLAYER_WALKING, 2 / 5f);
 
         moveset = new Moveset(rm);
         // damage seed is a random number between the damage range
@@ -139,7 +139,7 @@ public class Player extends Entity {
     public void render(SpriteBatch batch) {
         // draw shadow
         batch.draw(rm.shadow11x6, position.x + 3, position.y - 3);
-        batch.draw(am.getKeyFrame(true), position.x + 1, position.y);
+        batch.draw(selfAnimation.getKeyFrame(true), position.x + 1, position.y);
     }
 
     /**
@@ -228,7 +228,9 @@ public class Player extends Entity {
         int cy = (int) (position.y / tileMap.tileSize);
         Tile currentTile = tileMap.getTile(cx, cy);
 
-        if (currentTile.isSpecial()) am.currentAnimation.stop();
+        if (currentTile.isSpecial()) {
+            selfAnimation.currentAnimation.stop();
+        }
 
         if (canMove()) {
             // Player goes forwards or backwards from the tile in the direction they entered
@@ -306,21 +308,21 @@ public class Player extends Entity {
             else if (currentTile.isIce()) {
                 if (!nextTileBlocked(prevDir)) {
                     move(prevDir);
-                    am.setAnimation(prevDir);
-                    am.stopAnimation();
-                    pauseAnim = true;
+                    selfAnimation.setAnimation(prevDir);
+                    selfAnimation.stopAnimation();
+                    pauseSelfAnimation = true;
                 }
             }
             // map completed
             else if (currentTile.isEnd()) completedMap = true;
-            else pauseAnim = false;
+            else pauseSelfAnimation = false;
         }
     }
 
     public void changeDirection(int dir) {
         move(dir);
         prevDir = dir;
-        am.setAnimation(dir);
+        selfAnimation.setAnimation(dir);
     }
 
     /**

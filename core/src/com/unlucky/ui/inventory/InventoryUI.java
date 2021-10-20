@@ -377,7 +377,7 @@ public class InventoryUI extends UI {
                         }
                     }
                 }
-                if (inMenu) game.save.save();
+                if (inMenu) game.saveManager.save();
             }
 
         });
@@ -467,7 +467,7 @@ public class InventoryUI extends UI {
                             }
                             updateText();
                         }
-                        if (inMenu) game.save.save();
+                        if (inMenu) game.saveManager.save();
                     }
                 }
             }
@@ -555,7 +555,7 @@ public class InventoryUI extends UI {
                                 player.inventory.removeItem(currentItem.index);
                                 unselectItem();
                                 updateText();
-                                game.save.save();
+                                game.saveManager.save();
                             }
                         }
 
@@ -589,7 +589,7 @@ public class InventoryUI extends UI {
                     item.bonusEnchantChance = scroll.eChance;
                     scroll.actor.remove();
                     player.inventory.removeItem(scroll.index);
-                    if (inMenu) game.save.save();
+                    if (inMenu) game.saveManager.save();
                 }
                 else {
                     player.inventory.addItemAtIndex(scroll, scroll.index);
@@ -631,7 +631,7 @@ public class InventoryUI extends UI {
         if (Util.isSuccess(Util.ENCHANT + currentItem.bonusEnchantChance)) {
             currentItem.enchant();
             player.stats.numEnchants++;
-            game.save.save();
+            game.saveManager.save();
             // update item tooltip
             tooltip.updateText(currentItem);
             new Dialog("Success!", rm.dialogSkin) {
@@ -679,7 +679,7 @@ public class InventoryUI extends UI {
                     }
 
                 }.show(stage).getTitleLabel().setAlignment(Align.center);
-                game.save.save();
+                game.saveManager.save();
             } else {
                 new Dialog("Fail!", rm.dialogSkin) {
                     {
@@ -735,7 +735,7 @@ public class InventoryUI extends UI {
                     player.inventory.removeItem(currentItem.index);
                     unselectItem();
                     updateText();
-                    if (inMenu) game.save.save();
+                    if (inMenu) game.saveManager.save();
                 }
             }
 

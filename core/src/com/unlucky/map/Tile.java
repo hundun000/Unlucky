@@ -2,7 +2,7 @@ package com.unlucky.map;
 
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
-import com.unlucky.animation.AnimationManager;
+import com.unlucky.animation.AnimationComponent;
 import com.unlucky.entity.Entity;
 import com.unlucky.resource.Util;
 
@@ -17,7 +17,7 @@ public class Tile {
     // Image representation of tile
     public TextureRegion sprite;
     // animation of a tile
-    public AnimationManager anim;
+    public AnimationComponent anim;
 
     /**
      * Types of Tiles
@@ -93,7 +93,7 @@ public class Tile {
      * @param anim
      * @param tilePosition
      */
-    public Tile(int id, AnimationManager anim, Vector2 tilePosition) {
+    public Tile(int id, AnimationComponent anim, Vector2 tilePosition) {
         this.id = id;
         this.anim = anim;
         this.tilePosition = tilePosition;

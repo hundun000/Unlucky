@@ -2,7 +2,7 @@ package com.unlucky.entity.enemy;
 
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
-import com.unlucky.animation.AnimationManager;
+import com.unlucky.animation.AnimationComponent;
 import com.unlucky.map.TileMap;
 import com.unlucky.resource.ResourceManager;
 import com.unlucky.resource.Util;
@@ -27,9 +27,9 @@ public class Boss extends Enemy {
         this.bossId = bossId;
 
         // create tilemap animation
-        am = new AnimationManager(rm.sprites16x16, worldIndex, startIndex, numFrames, delay);
+        selfAnimation = new AnimationComponent(rm.sprites16x16, worldIndex, startIndex, numFrames, delay);
         // create battle scene animation
-        bam = new AnimationManager(rm.battleSprites96x96, worldIndex, startIndex, 2, delay);
+        battleAnimation = new AnimationComponent(rm.battleSprites96x96, worldIndex, startIndex, 2, delay);
     }
 
     @Override

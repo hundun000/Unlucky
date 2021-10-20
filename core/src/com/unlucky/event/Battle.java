@@ -2,6 +2,7 @@ package com.unlucky.event;
 
 import com.badlogic.gdx.math.MathUtils;
 import com.unlucky.battle.Move;
+import com.unlucky.battle.MoveType;
 import com.unlucky.battle.StatusEffect;
 import com.unlucky.entity.enemy.Boss;
 import com.unlucky.entity.enemy.Enemy;
@@ -93,14 +94,14 @@ public class Battle {
         // accounting for player accuracy or accuracy buff
         if (Util.isSuccess(player.getAccuracy() - (redReaperDebuff ? 40 : 0)) || buffs[Util.FOCUS]) {
             // accurate or wide
-            if (move.type < 2) {
+            if (move.type.isAccurateOrWide()) {
                 int damage = MathUtils.random(Math.round(move.minDamage), Math.round(move.maxDamage));
                 if (buffs[Util.INTIMIDATE]) damage *= Util.INTIMIDATE_MULT;
                 if (buffs[Util.SACRIFICE]) damage *= psacrifice;
 
                 if (buffs[Util.INVERT]) {
                     // for heal animation
-                    player.useMove(3);
+                    player.useMove(MoveType.HEALING);
                     player.heal(damage);
                     player.stats.hpHealed += damage;
                     player.stats.updateMax(player.stats.maxHealSingleMove, damage);
@@ -126,7 +127,7 @@ public class Battle {
                 }
             }
             // crit (3x damage if success)
-            else if (move.type == 2) {
+            else if (move.type == MoveType.CRIT) {
                 int damage = Math.round(move.minDamage);
                 int critChance;
 
@@ -138,7 +139,7 @@ public class Battle {
                 if (Util.isSuccess(critChance)) {
                     damage *= Util.CRIT_MULTIPLIER;
                     if (buffs[Util.INVERT]) {
-                        player.useMove(3);
+                        player.useMove(MoveType.HEALING);
                         player.heal(damage);
                         player.stats.hpHealed += damage;
                         player.stats.updateMax(player.stats.maxHealSingleMove, damage);
@@ -166,7 +167,7 @@ public class Battle {
                     }
                 } else {
                     if (buffs[Util.INVERT]) {
-                        player.useMove(3);
+                        player.useMove(MoveType.HEALING);
                         player.heal(damage);
                         player.stats.hpHealed += damage;
                         player.stats.updateMax(player.stats.maxHealSingleMove, damage);
@@ -193,10 +194,10 @@ public class Battle {
                 }
             }
             // heal + set dmg reduction for next turn
-            else if (move.type == 3) {
+            else if (move.type == MoveType.HEALING) {
                 int heal = MathUtils.random(Math.round(move.minHeal), Math.round(move.maxHeal));
                 if (buffs[Util.INVERT]) {
-                    player.useMove(MathUtils.random(0, 2));
+                    player.useMove(MoveType.fromCode(MathUtils.random(0, 2)));
                     opponent.hit(heal);
                     cumulativeDamage += heal;
                     player.stats.damageDealt += heal;
@@ -274,7 +275,7 @@ public class Battle {
                 if (opponent.isBoss() || opponent.isElite()) move = opponent.getMoveset().getHealPriority();
 
                 // accurate or wide
-                if (move.type < 2) {
+                if (move.type.isAccurateOrWide()) {
                     player.useMove(move.type);
                     int damage = MathUtils.random(Math.round(move.minDamage), Math.round(move.maxDamage));
                     opponent.hit(damage);
@@ -284,7 +285,7 @@ public class Battle {
                     };
                 }
                 // crit (3x damage if success)
-                else if (move.type == 2) {
+                else if (move.type == MoveType.CRIT) {
                     player.useMove(move.type);
                     int damage = Math.round(move.minDamage);
                     if (Util.isSuccess(move.crit)) {
@@ -304,7 +305,7 @@ public class Battle {
                     }
                 }
                 // heal gets doubled when reflected
-                else if (move.type == 3) {
+                else if (move.type == MoveType.HEALING) {
                     opponent.useMove(move.type);
                     int heal = MathUtils.random(Math.round(move.minHeal), Math.round(move.maxHeal));
                     heal *= 2;
@@ -321,7 +322,7 @@ public class Battle {
             else {
                 opponent.useMove(move.type);
                 // accurate or wide
-                if (move.type < 2) {
+                if (move.type.isAccurateOrWide()) {
                     int damage = MathUtils.random(Math.round(move.minDamage), Math.round(move.maxDamage));
                     damage = reduceDamage(damage);
                     player.stats.damageTaken += damage;
@@ -333,7 +334,7 @@ public class Battle {
 
                     // ice golem passive
                     if (opponent.isBoss()) {
-                        if (((Boss) opponent).bossId == 2 && move.type == 0) {
+                        if (((Boss) opponent).bossId == 2 && move.type == MoveType.ACCURATE) {
                             int heal = (int) (0.2 * (float) damage);
                             opponent.heal(heal);
                             dialog = new String[] {
@@ -345,7 +346,7 @@ public class Battle {
                     }
                 }
                 // crit (3x damage if success)
-                else if (move.type == 2) {
+                else if (move.type == MoveType.CRIT) {
                     int damage = Math.round(move.minDamage);
                     if (Util.isSuccess(move.crit)) {
                         damage *= Util.CRIT_MULTIPLIER;
@@ -368,7 +369,7 @@ public class Battle {
                     }
                 }
                 // heal
-                else if (move.type == 3) {
+                else if (move.type == MoveType.HEALING) {
                     int heal = MathUtils.random(Math.round(move.minHeal), Math.round(move.maxHeal));
                     enemyRed = move.dmgReduction;
                     opponent.heal(heal);

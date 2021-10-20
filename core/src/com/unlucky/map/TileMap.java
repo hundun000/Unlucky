@@ -7,7 +7,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
-import com.unlucky.animation.AnimationManager;
+import com.unlucky.animation.AnimationComponent;
 import com.unlucky.entity.Entity;
 import com.unlucky.resource.ResourceManager;
 import com.unlucky.resource.Util;
@@ -183,7 +183,7 @@ public class TileMap {
                     int numFrames = Integer.parseInt(trivalue[1]);
                     int fps = Integer.parseInt(trivalue[2]);
 
-                    AnimationManager anim = new AnimationManager(rm.atiles16x16, numFrames, animIndex, (float) 1 / fps);
+                    AnimationComponent anim = new AnimationComponent(rm.atiles16x16, numFrames, animIndex, (float) 1 / fps);
 
                     t = new Tile(animIndex + 96, anim, new Vector2(x, y));
                 }
