@@ -15,7 +15,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Slider;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
-import com.unlucky.main.Unlucky;
+import com.unlucky.Unlucky;
 import com.unlucky.map.WeatherType;
 import com.unlucky.resource.ResourceManager;
 
@@ -206,8 +206,8 @@ public class SettingsScreen extends MenuExtensionScreen {
                 if (!game.player.settings.muteSfx) rm.buttonclick2.play(game.player.settings.sfxVolume);
                 game.player.settings.showWeatherAnimations = showWeatherAnims.isChecked();
                 if (inGame) {
-                    if (showWeatherAnims.isChecked()) game.worldScreen.worldData.setWeather(game.worldScreen.worldData.tileMap.weather);
-                    else game.worldScreen.worldData.setWeather(0);
+                    if (showWeatherAnims.isChecked()) game.worldScreen.worldCoreLogic.setWeather(game.worldScreen.worldCoreLogic.tileMap.weather);
+                    else game.worldScreen.worldCoreLogic.setWeather(0);
                 }
                 if (!inGame) game.saveManager.save();
             }
@@ -256,23 +256,29 @@ public class SettingsScreen extends MenuExtensionScreen {
         showWeatherAnims.setChecked(game.player.settings.showWeatherAnimations);
         showFps.setChecked(game.player.settings.showFps);
     }
-
+    
     @Override
-    public void render(float dt) {
-        update(dt);
-
+    public void update(float dt) {
+        super.update(dt);
+        
         if (!inGame) {
             for (int i = 0; i < game.menuBackground.length; i++) {
                 game.menuBackground[i].update(dt);
             }
         }
+    }
+    
+
+    @Override
+    public void render(float dt) {
+        update(dt);
 
         // clear screen
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         if (renderBatch) {
-            stage.getBatch().setProjectionMatrix(stage.getCamera().combined);
-            stage.getBatch().begin();
+            batch.setProjectionMatrix(stage.getCamera().combined);
+            batch.begin();
             // fix fading
             if (batchFade) stage.getBatch().setColor(Color.WHITE);
 
@@ -282,10 +288,10 @@ public class SettingsScreen extends MenuExtensionScreen {
             }
             else {
                 for (int i = 0; i < game.menuBackground.length; i++) {
-                    game.menuBackground[i].render((SpriteBatch) stage.getBatch());
+                    game.menuBackground[i].render(dt);
                 }
             }
-            stage.getBatch().end();
+            batch.end();
         }
 
         stage.act(dt);

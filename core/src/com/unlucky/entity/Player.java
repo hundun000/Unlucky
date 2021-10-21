@@ -1,5 +1,6 @@
 package com.unlucky.entity;
 
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
@@ -11,7 +12,7 @@ import com.unlucky.entity.enemy.Enemy;
 import com.unlucky.inventory.Equipment;
 import com.unlucky.inventory.Inventory;
 import com.unlucky.inventory.Item;
-import com.unlucky.map.worldData;
+import com.unlucky.map.WorldCoreLogic;
 import com.unlucky.map.Tile;
 import com.unlucky.resource.ResourceManager;
 import com.unlucky.resource.Statistics;
@@ -136,7 +137,7 @@ public class Player extends Entity {
         }
     }
 
-    public void render(SpriteBatch batch) {
+    public void render(Batch batch) {
         // draw shadow
         batch.draw(rm.shadow11x6, position.x + 3, position.y - 3);
         batch.draw(selfAnimationComponent.getKeyFrame(true), position.x + 1, position.y);
@@ -510,7 +511,7 @@ public class Player extends Entity {
      *
      * @return
      */
-    public String[] getQuestionMarkDialog(int mapLevel, worldData worldData) {
+    public String[] getQuestionMarkDialog(int mapLevel, WorldCoreLogic WorldCoreLogic) {
         String[] ret = null;
 
         if (Util.isSuccess(Util.TILE_INTERATION)) {
@@ -523,7 +524,7 @@ public class Player extends Entity {
                     gold += MathUtils.random(7, 13);
                 }
                 this.gold += gold;
-                worldData.goldObtained += gold;
+                WorldCoreLogic.goldObtained += gold;
                 ret = new String[] {
                     "The random tile gave something!",
                     "You obtained " + gold + " gold!"
@@ -560,7 +561,7 @@ public class Player extends Entity {
                     };
                     item.adjust(mapLevel);
                     inventory.addItem(item);
-                    worldData.itemsObtained.add(item);
+                    WorldCoreLogic.itemsObtained.add(item);
                 }
             }
         }
@@ -581,7 +582,7 @@ public class Player extends Entity {
      * @param mapLevel
      * @return
      */
-    public String[] getExclamDialog(int mapLevel, worldData worldData) {
+    public String[] getExclamDialog(int mapLevel, WorldCoreLogic WorldCoreLogic) {
         String[] ret = null;
 
         if (Util.isSuccess(Util.TILE_INTERATION)) {

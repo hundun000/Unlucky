@@ -1,6 +1,7 @@
 package com.unlucky.effects;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
@@ -76,7 +77,7 @@ public class ParticleFactory {
         }
     }
 
-    public void render(SpriteBatch batch) {
+    public void render(Batch batch) {
         // render all particles
         for (int i = 0; i < particles.size; i++) {
             particles.get(i).render(batch);

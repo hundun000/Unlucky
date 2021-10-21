@@ -19,7 +19,7 @@ import com.unlucky.effects.Particle;
 import com.unlucky.effects.ParticleFactory;
 import com.unlucky.entity.Entity;
 import com.unlucky.entity.Player;
-import com.unlucky.event.BattleData;
+import com.unlucky.event.BattleCoreLogic;
 import com.unlucky.map.TileMap;
 import com.unlucky.map.WeatherType;
 import com.unlucky.resource.ResourceManager;
@@ -38,11 +38,11 @@ public class BattleRoomUI extends SubBattleUI {
     // Health bars
     // player
     private MovingImageUI playerHud;
-    private HealthBar playerHpBar;
+    private HealthBarUI playerHpBar;
     public Label playerHudLabel;
     // enemy
     private MovingImageUI enemyHud;
-    private HealthBar enemyHpBar;
+    private HealthBarUI enemyHpBar;
     private Label enemyHudLabel;
 
     // Battle scene sprite positions
@@ -82,9 +82,9 @@ public class BattleRoomUI extends SubBattleUI {
 
     private boolean sfxPlaying = false;
 
-    public BattleRoomUI(WorldScreen worldScreen, Player player, BattleData battleData,
+    public BattleRoomUI(WorldScreen worldScreen, Player player, BattleCoreLogic battleCoreLogic,
                        BattleUI uiHandler, Stage stage, ResourceManager rm) {
-        super(worldScreen, player, battleData, uiHandler, stage, rm);
+        super(worldScreen, player, battleCoreLogic, uiHandler, stage, rm);
 
         
 
@@ -99,7 +99,7 @@ public class BattleRoomUI extends SubBattleUI {
 
         // create player hud
         playerHud = new MovingImageUI(rm.playerhpbar145x40, new Vector2(-72, 100), new Vector2(0, 100), 100.f, 72, 20);
-        playerHpBar = new HealthBar(player, stage, shapeRenderer, 48, 4, new Vector2(), new Color(0, 225 / 255.f, 0, 1));
+        playerHpBar = new HealthBarUI(this.stage.getBatch(), player, stage.getCamera(), 48, 4, new Vector2(), new Color(0, 225 / 255.f, 0, 1), shapeRenderer);
         playerHudLabel = new Label("", ls);
         playerHudLabel.setFontScale(0.5f);
         playerHudLabel.setSize(49, 6);
@@ -107,7 +107,7 @@ public class BattleRoomUI extends SubBattleUI {
 
         // create enemy hud
         enemyHud = new MovingImageUI(rm.enemyhpbar145x40, new Vector2(200, 100), new Vector2(128, 100), 100.f, 72, 20);
-        enemyHpBar = new HealthBar(null, stage, shapeRenderer, 48, 4, new Vector2(), new Color(225 / 255.f, 0, 0, 1));
+        enemyHpBar = new HealthBarUI(this.stage.getBatch(), null, stage.getCamera(), 48, 4, new Vector2(), new Color(225 / 255.f, 0, 0, 1), shapeRenderer);
         enemyHudLabel = new Label("", ls);
         enemyHudLabel.setFontScale(0.5f);
         enemyHudLabel.setSize(49, 6);
@@ -143,21 +143,21 @@ public class BattleRoomUI extends SubBattleUI {
         playerHud.start();
 
         if (toggle) {
-            enemyHpBar.setEntity(battleData.opponent);
+            enemyHpBar.setEntity(battleCoreLogic.opponent);
 
-            if (battleData.opponent.isBoss()) {
+            if (battleCoreLogic.opponent.isBoss()) {
                 // boss's name is always red
                 enemyHudLabel.setStyle(strongest);
             }
             else {
-                int diff = battleData.opponent.getLevel() - player.getLevel();
+                int diff = battleCoreLogic.opponent.getLevel() - player.getLevel();
                 if (diff <= -3) enemyHudLabel.setStyle(weakest);
                 else if (diff == -1 || diff == -2) enemyHudLabel.setStyle(weaker);
                 else if (diff == 0) enemyHudLabel.setStyle(same);
                 else if (diff == 1 || diff == 2) enemyHudLabel.setStyle(stronger);
                 else if (diff >= 3) enemyHudLabel.setStyle(strongest);
             }
-            enemyHudLabel.setText(battleData.opponent.getId());
+            enemyHudLabel.setText(battleCoreLogic.opponent.getId());
         }
 
         enemyHud.setVisible(toggle);
@@ -167,14 +167,14 @@ public class BattleRoomUI extends SubBattleUI {
         playerSprite.start();
         enemySprite.start();
 
-        if (worldScreen.worldData.weather == WeatherType.RAIN) {
+        if (worldScreen.worldCoreLogic.weather == WeatherType.RAIN) {
             factory.set(Particle.STATIC_RAINDROP, 40, new Vector2(Util.RAINDROP_X, -100));
-        } else if (worldScreen.worldData.weather == WeatherType.HEAVY_RAIN ||
-                worldScreen.worldData.weather == WeatherType.THUNDERSTORM) {
+        } else if (worldScreen.worldCoreLogic.weather == WeatherType.HEAVY_RAIN ||
+                worldScreen.worldCoreLogic.weather == WeatherType.THUNDERSTORM) {
             factory.set(Particle.STATIC_RAINDROP, 75, new Vector2(Util.RAINDROP_X, -120));
-        } else if (worldScreen.worldData.weather == WeatherType.SNOW) {
+        } else if (worldScreen.worldCoreLogic.weather == WeatherType.SNOW) {
             factory.set(Particle.SNOWFLAKE, 100, new Vector2(Util.SNOWFLAKE_X, -60));
-        } else if (worldScreen.worldData.weather == WeatherType.BLIZZARD) {
+        } else if (worldScreen.worldCoreLogic.weather == WeatherType.BLIZZARD) {
             factory.set(Particle.SNOWFLAKE, 300, new Vector2(Util.SNOWFLAKE_X + 50, -80));
         }
 
@@ -201,11 +201,11 @@ public class BattleRoomUI extends SubBattleUI {
         playerHud.update(dt);
         enemyHud.update(dt);
 
-        if (worldScreen.worldData.weather != WeatherType.NORMAL) factory.update(dt);
+        if (worldScreen.worldCoreLogic.weather != WeatherType.NORMAL) factory.update(dt);
 
         // entity sprite animations
         player.getBattleAnimationComponent().update(dt);
-        if (battleData.opponent.getBattleAnimationComponent() != null) battleData.opponent.getBattleAnimationComponent().update(dt);
+        if (battleCoreLogic.opponent.getBattleAnimationComponent() != null) battleCoreLogic.opponent.getBattleAnimationComponent().update(dt);
 
         playerSprite.update(dt);
         enemySprite.update(dt);
@@ -216,7 +216,7 @@ public class BattleRoomUI extends SubBattleUI {
             playerSprite.position.y = dy;
             if (playerSprite.position.y < -48) playerSprite.position.y = -48;
         }
-        if (battleData.opponent.isDead()) {
+        if (battleCoreLogic.opponent.isDead()) {
             float dy = enemySprite.position.y - 2;
             enemySprite.position.y = dy;
             if (enemySprite.position.y < -48) enemySprite.position.y = -48;
@@ -244,10 +244,10 @@ public class BattleRoomUI extends SubBattleUI {
 
         playerHudLabel.setText("HP: " + player.getHp() + "/" + player.getMaxHp());
         if (player.settings.showEnemyLevels) {
-            enemyHudLabel.setText("LV." + battleData.opponent.getLevel() + " " + battleData.opponent.getId());
+            enemyHudLabel.setText("LV." + battleCoreLogic.opponent.getLevel() + " " + battleCoreLogic.opponent.getId());
         }
         else {
-            enemyHudLabel.setText(battleData.opponent.getId());
+            enemyHudLabel.setText(battleCoreLogic.opponent.getId());
         }
 
         // show health bar animation after an entity uses its move
@@ -264,7 +264,7 @@ public class BattleRoomUI extends SubBattleUI {
         }
 
         if (player.getMoveUsed() != null) updateBattleAnimations(player, dt);
-        if (battleData.opponent.getMoveUsed() != null) updateBattleAnimations(battleData.opponent, dt);
+        if (battleCoreLogic.opponent.getMoveUsed() != null) updateBattleAnimations(battleCoreLogic.opponent, dt);
     }
 
     /**
@@ -329,10 +329,10 @@ public class BattleRoomUI extends SubBattleUI {
             worldScreen.getBatch().draw(player.getBattleAnimationComponent().getKeyFrame(true), playerSprite.position.x, playerSprite.position.y);
         }
         if (renderEnemy) {
-            TextureRegion r = battleData.opponent.getBattleAnimationComponent().getKeyFrame(true);
-            if (battleData.opponent.isBoss()) {
-                worldScreen.getBatch().draw(r, enemySprite.position.x + (48 - battleData.opponent.battleSize) / 2, enemySprite.position.y,
-                        battleData.opponent.battleSize, battleData.opponent.battleSize);
+            TextureRegion r = battleCoreLogic.opponent.getBattleAnimationComponent().getKeyFrame(true);
+            if (battleCoreLogic.opponent.isBoss()) {
+                worldScreen.getBatch().draw(r, enemySprite.position.x + (48 - battleCoreLogic.opponent.battleSize) / 2, enemySprite.position.y,
+                        battleCoreLogic.opponent.battleSize, battleCoreLogic.opponent.battleSize);
             }
             else {
                 worldScreen.getBatch().draw(r, enemySprite.position.x, enemySprite.position.y);
@@ -349,18 +349,18 @@ public class BattleRoomUI extends SubBattleUI {
             }
         }
         // enemy side
-        if (battleData.opponent.getMoveUsed() != null) {
-            if (battleData.opponent.getMoveUsed().isAttack()) {
-                worldScreen.getBatch().draw(attackAnims.get(battleData.opponent.getMoveUsed()).getKeyFrame(false), 42, 57);
-            } else if (battleData.opponent.getMoveUsed() == MoveType.HEALING) {
+        if (battleCoreLogic.opponent.getMoveUsed() != null) {
+            if (battleCoreLogic.opponent.getMoveUsed().isAttack()) {
+                worldScreen.getBatch().draw(attackAnims.get(battleCoreLogic.opponent.getMoveUsed()).getKeyFrame(false), 42, 57);
+            } else if (battleCoreLogic.opponent.getMoveUsed() == MoveType.HEALING) {
                 worldScreen.getBatch().draw(healAnim.getKeyFrame(false), 120, 50);
             }
         }
 
         // render weather and lighting conditions if any
-        if (worldScreen.worldData.weather != WeatherType.NORMAL) factory.render(worldScreen.getBatch());
+        if (worldScreen.worldCoreLogic.weather != WeatherType.NORMAL) factory.render(worldScreen.getBatch());
 
-        if (worldScreen.worldData.isDark) {
+        if (worldScreen.worldCoreLogic.isDark) {
             worldScreen.getBatch().setBlendFunction(GL20.GL_DST_COLOR, GL20.GL_ONE_MINUS_SRC_ALPHA);
             worldScreen.getBatch().draw(rm.battledarkness, 0, 0);
             worldScreen.getBatch().setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
@@ -368,7 +368,7 @@ public class BattleRoomUI extends SubBattleUI {
 
         // render player and enemy status icons
         player.statusEffects.render(worldScreen.getBatch());
-        battleData.opponent.statusEffects.render(worldScreen.getBatch());
+        battleCoreLogic.opponent.statusEffects.render(worldScreen.getBatch());
         worldScreen.getBatch().end();
 
         playerHpBar.render(dt);

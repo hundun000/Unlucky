@@ -1,5 +1,6 @@
 package com.unlucky.effects;
 
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
@@ -114,7 +115,7 @@ public class Particle implements Pool.Poolable {
         }
     }
 
-    public void render(SpriteBatch batch) {
+    public void render(Batch batch) {
         if (shouldRemove) {
             if (deathAnim != null) batch.draw(deathAnim.getKeyFrame(false), position.x, position.y);
         }

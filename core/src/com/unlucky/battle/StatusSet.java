@@ -1,5 +1,6 @@
 package com.unlucky.battle;
 
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Array;
 import com.unlucky.resource.ResourceManager;
@@ -95,7 +96,7 @@ public class StatusSet {
      *
      * @param batch
      */
-    public void render(SpriteBatch batch) {
+    public void render(Batch batch) {
         for (int i = 0; i < effects.size; i++) {
             StatusEffect s = effects.get(i);
             if (player) {

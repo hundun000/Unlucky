@@ -9,18 +9,17 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
+import com.unlucky.Unlucky;
 import com.unlucky.entity.Player;
-import com.unlucky.event.BattleData;
+import com.unlucky.event.BattleCoreLogic;
 import com.unlucky.event.BattlePhase;
 import com.unlucky.event.WorldState;
-import com.unlucky.main.Unlucky;
 import com.unlucky.resource.ResourceManager;
 import com.unlucky.resource.Util;
 import com.unlucky.screen.WorldScreen;
 import com.unlucky.screen.game.WorldUI;
 import com.unlucky.ui.battleui.BattleUI;
-import com.unlucky.ui.battleui.DialogContent;
-import com.unlucky.ui.battleui.DialogContent.TextCycleState;
+import com.unlucky.ui.dialog.DialogContent.TextCycleState;
 
 /**
  * @author hundun
@@ -163,16 +162,16 @@ public class DialogUI<T> extends WorldUI {
                 posSwitch = !posSwitch;
             }
 
-            batch.setProjectionMatrix(stage.getCamera().combined);
-            batch.begin();
+            this.stage.getBatch().setProjectionMatrix(stage.getCamera().combined);
+            this.stage.getBatch().begin();
             // render red arrow to show when a text animation cycle is complete
             if (posSwitch) {
-                batch.draw(rm.redarrow10x9, 182, 10);
+                this.stage.getBatch().draw(rm.redarrow10x9, 182, 10);
             }
             else {
-                batch.draw(rm.redarrow10x9, 182, 12);
+                this.stage.getBatch().draw(rm.redarrow10x9, 182, 12);
             }
-            batch.end();
+            this.stage.getBatch().end();
         }
     }
     

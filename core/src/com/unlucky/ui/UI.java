@@ -7,8 +7,8 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.unlucky.Unlucky;
 import com.unlucky.entity.Player;
-import com.unlucky.main.Unlucky;
 import com.unlucky.map.TileMap;
 import com.unlucky.resource.ResourceManager;
 import com.unlucky.screen.WorldScreen;
@@ -21,47 +21,26 @@ import com.unlucky.screen.WorldScreen;
  */
 public abstract class UI implements Disposable {
 
-    protected Stage stage;
-    protected final Viewport viewport;
-
     protected final ResourceManager rm;
-    protected final Player player;
+    
     //protected final WorldScreen worldScreen;
     protected final Unlucky game;
-    protected final Batch batch;
+    //protected final Batch batch;
     // graphics
     protected final ShapeRenderer shapeRenderer;
-
-//    public UI(final Unlucky game, GameScreen gameScreen, Player player, ResourceManager rm) {
-//        this.game = game;
-//        this.gameScreen = gameScreen;
-//        this.player = player;
-//        this.rm = rm;
-//
-//        viewport = new StretchViewport(Unlucky.V_WIDTH, Unlucky.V_HEIGHT, new OrthographicCamera());
-//        stage = new Stage(viewport, game.batch);
-//
-//        shapeRenderer = new ShapeRenderer();
-//    }
-
     
-    public UI(final Unlucky game, Player player, Batch batch, ResourceManager rm) {
+    protected final Stage stage;
+
+
+    public UI(final Unlucky game, Batch batch, Stage stage, ResourceManager rm, ShapeRenderer shapeRenderer) {
         this.game = game;
         //this.worldScreen = worldScreen;
-        this.player = player;
         this.rm = rm;
-        this.batch = batch;
-        
-        viewport = new StretchViewport(Unlucky.V_WIDTH, Unlucky.V_HEIGHT, new OrthographicCamera());
-        stage = new Stage(viewport, batch);
-
-        shapeRenderer = new ShapeRenderer();
+        //this.batch = batch;
+        this.stage = stage;
+        this.shapeRenderer = shapeRenderer;
     }
-    
 
-    public UI(final Unlucky game, Player player, ResourceManager rm) {
-        this(game, player, game.batch, rm);
-    }
 
     public abstract void update(float dt);
 

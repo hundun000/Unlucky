@@ -6,19 +6,22 @@ import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-import com.unlucky.event.BattleData;
+import com.unlucky.Unlucky;
+import com.unlucky.event.BattleCoreLogic;
 import com.unlucky.event.WorldState;
-import com.unlucky.main.Unlucky;
-import com.unlucky.map.worldData;
-import com.unlucky.parallax.Background;
+import com.unlucky.map.Tile;
+import com.unlucky.map.WorldCoreLogic;
+import com.unlucky.parallax.BackgroundUI;
 import com.unlucky.resource.ResourceManager;
-import com.unlucky.screen.game.WorldDialogUI;
 import com.unlucky.screen.game.LevelUpUI;
 import com.unlucky.screen.game.ScreenTransitionUI;
 import com.unlucky.ui.battleui.BattleUI;
+import com.unlucky.ui.dialog.DialogUI;
+import com.unlucky.ui.dialog.IDialogResultHandler;
 import com.unlucky.ui.Hud;
 
 /**
@@ -26,24 +29,24 @@ import com.unlucky.ui.Hud;
  *
  * @author Ming Li
  */
-public class WorldScreen extends AbstractScreen {
+public class WorldScreen extends AbstractScreen implements IDialogResultHandler<WorldState> {
 
     public WorldState worldState;
 
-    public worldData worldData;
-    public Hud hud;
+    public final WorldCoreLogic worldCoreLogic;
+    public final Hud hud;
     
     // sub-UIs
-    public BattleUI battleUI;
-    public ScreenTransitionUI transitionUI;
-    public LevelUpUI levelUpUI;
-    public WorldDialogUI worldDialogUI;
-
+    public final BattleUI battleUI;
+    public final ScreenTransitionUI transitionUI;
+    public final LevelUpUI levelUpUI;
+    public final DialogUI<WorldState> dialogUI;
+    
     // input
-    public InputMultiplexer multiplexer;
+    public final InputMultiplexer multiplexer;
 
     // battle background
-    private Background[] backgrounds;
+    private BackgroundUI[] backgroundUIs;
 
     // key
     private int worldIndex;
@@ -58,20 +61,20 @@ public class WorldScreen extends AbstractScreen {
 
         worldState = WorldState.MOVING;
 
-        worldData = new worldData(this, game.player, rm);
+        worldCoreLogic = new WorldCoreLogic(this, game.player, rm);
         
-        hud = new Hud(this, worldData.player, rm);
-        battleUI = new BattleUI(this, worldData.tileMap, worldData.player, rm);
-        transitionUI = new ScreenTransitionUI(this, battleUI, worldData.tileMap, hud, worldData.player, rm);
-        levelUpUI = new LevelUpUI(this, worldData.player, rm);
-        worldDialogUI = new WorldDialogUI(this, worldData.player, rm);
-
+        hud = new Hud(this, worldCoreLogic.player, rm);
+        battleUI = new BattleUI(this, worldCoreLogic.tileMap, worldCoreLogic.player, rm);
+        transitionUI = new ScreenTransitionUI(this, battleUI, worldCoreLogic.tileMap, hud, worldCoreLogic.player, rm);
+        levelUpUI = new LevelUpUI(this, worldCoreLogic.player, rm);
+        this.dialogUI = new DialogUI<>(this, this, worldCoreLogic.player, stage, rm);
+        
         // create bg
-        backgrounds = new Background[2];
+        backgroundUIs = new BackgroundUI[2];
         // sky
-        backgrounds[0] = new Background((OrthographicCamera) battleUI.getStage().getCamera(), new Vector2(0.3f, 0));
+        backgroundUIs[0] = new BackgroundUI(batch, (OrthographicCamera) battleUI.getStage().getCamera(), new Vector2(0.3f, 0), shapeRenderer);
         // field
-        backgrounds[1] = new Background((OrthographicCamera) battleUI.getStage().getCamera(), new Vector2(0, 0));
+        backgroundUIs[1] = new BackgroundUI(batch, (OrthographicCamera) battleUI.getStage().getCamera(), new Vector2(0, 0), shapeRenderer);
 
 
         // input multiplexer
@@ -79,7 +82,7 @@ public class WorldScreen extends AbstractScreen {
         multiplexer.addProcessor(hud.getStage());
         multiplexer.addProcessor(battleUI.getStage());
         multiplexer.addProcessor(levelUpUI.getStage());
-        multiplexer.addProcessor(worldDialogUI.getStage());
+        multiplexer.addProcessor(dialogUI.getStage());
     }
 
     public void init(int worldIndex, int levelIndex) {
@@ -99,16 +102,16 @@ public class WorldScreen extends AbstractScreen {
             // init tile map
             setWorldState(WorldState.MOVING);
             hud.deathGroup.setVisible(false);
-            worldData.init(worldIndex, levelIndex);
-            worldData.player.moving = -1;
+            worldCoreLogic.init(worldIndex, levelIndex);
+            worldCoreLogic.player.moving = -1;
             
             //hud.setTileMap(gamePublicData.tileMap);
-            battleUI.setTileMapToData(worldData.tileMap);
+            battleUI.setTileMapToData(worldCoreLogic.tileMap);
             //levelUpUI.setTileMap(gamePublicData.tileMap);
             //worldDialogUI.setTileMap(gamePublicData.tileMap);
 
             // update bg
-            createBackground(worldData.worldIndex);
+            createBackground(worldCoreLogic.worldIndex);
 
             hud.toggle(true);
             hud.touchDown = false;
@@ -125,19 +128,19 @@ public class WorldScreen extends AbstractScreen {
         // background image array is ordered by depth
         TextureRegion[] images = rm.battleBackgrounds400x240[bgIndex];
         for (int i = 0; i < 2; i++) {
-            backgrounds[i].setImage(images[i]);
+            backgroundUIs[i].setImage(images[i]);
         }
         // set background movement for the specific worlds
         if (bgIndex == 0) {
-            backgrounds[0].setVector(40, 0);
+            backgroundUIs[0].setVector(40, 0);
         }
         else if (bgIndex == 1) {
-            backgrounds[0].setVector(0, 0);
+            backgroundUIs[0].setVector(0, 0);
         }
         else if (bgIndex == 2) {
-            backgrounds[0].setVector(40, 0);
+            backgroundUIs[0].setVector(40, 0);
         }
-        backgrounds[1].setVector(0, 0);
+        backgroundUIs[1].setVector(0, 0);
     }
 
     /**
@@ -145,7 +148,7 @@ public class WorldScreen extends AbstractScreen {
      */
     public void die() {
         // reset player's hp after dying
-        worldData.player.setHp(worldData.player.getMaxHp());
+        worldCoreLogic.player.setHp(worldCoreLogic.player.getMaxHp());
         setWorldState(WorldState.DEATH);
         hud.toggle(false);
         hud.deathGroup.setVisible(true);
@@ -155,16 +158,16 @@ public class WorldScreen extends AbstractScreen {
      * Updates the camera position to follow the player unless he's on the edges of the map
      */
     public void updateCamera() {
-        boolean playerNearLeftBottom = worldData.player.getPosition().x < 6 * 16;
-        boolean playerNearRightBottom = worldData.player.getPosition().x > worldData.tileMap.mapWidth * 16 - 7 * 16;
-        boolean playerNearDownBottom =  worldData.player.getPosition().y < 4 * 16 - 8;
-        boolean playerNearTopBottom = worldData.player.getPosition().y > worldData.tileMap.mapHeight * 16 - 4 * 16;
+        boolean playerNearLeftBottom = worldCoreLogic.player.getPosition().x < 6 * 16;
+        boolean playerNearRightBottom = worldCoreLogic.player.getPosition().x > worldCoreLogic.tileMap.mapWidth * 16 - 7 * 16;
+        boolean playerNearDownBottom =  worldCoreLogic.player.getPosition().y < 4 * 16 - 8;
+        boolean playerNearTopBottom = worldCoreLogic.player.getPosition().y > worldCoreLogic.tileMap.mapHeight * 16 - 4 * 16;
         // camera directs on the player
         if (!playerNearRightBottom && !playerNearLeftBottom) {
-            cam.position.x = worldData.player.getPosition().x + 8;
+            cam.position.x = worldCoreLogic.player.getPosition().x + 8;
         }
         if (!playerNearTopBottom && !playerNearDownBottom) {
-            cam.position.y = worldData.player.getPosition().y + 4;
+            cam.position.y = worldCoreLogic.player.getPosition().y + 4;
         }
         cam.update();
 
@@ -175,57 +178,60 @@ public class WorldScreen extends AbstractScreen {
             cam.position.y = 60.5f;
         }
         if (playerNearRightBottom) {
-            cam.position.x = (worldData.tileMap.mapWidth * 16 - 7 * 16) + 8;
+            cam.position.x = (worldCoreLogic.tileMap.mapWidth * 16 - 7 * 16) + 8;
         }
         if (playerNearTopBottom) {
-            cam.position.y = (worldData.tileMap.mapHeight * 16 - 4 * 16) + 4;
+            cam.position.y = (worldCoreLogic.tileMap.mapHeight * 16 - 4 * 16) + 4;
         }
     }
 
     public void update(float dt) {
         if (worldState != WorldState.PAUSE) {
             // update game time
-            worldData.time += dt;
+            worldCoreLogic.time += dt;
         }
 
         if (worldState == WorldState.MOVING) {
             updateCamera();
 
-            worldData.update(dt);
+            worldCoreLogic.update(dt);
             hud.update(dt);
         }
 
         if (worldState == WorldState.BATTLING) {
             // update bg
-            for (int i = 0; i < backgrounds.length; i++) {
-                backgrounds[i].update(dt);
+            for (int i = 0; i < backgroundUIs.length; i++) {
+                backgroundUIs[i].update(dt);
             }
             battleUI.update(dt);
         }
 
         if (worldState == WorldState.TRANSITION) transitionUI.update(dt);
         if (worldState == WorldState.LEVEL_UP) levelUpUI.update(dt);
-        if (worldState == WorldState.IN_TILE_EVENT) worldDialogUI.update(dt);
+        if (worldState == WorldState.IN_TILE_EVENT) dialogUI.update(dt);
         if (worldState == WorldState.INVENTORY) game.inventoryUI.update(dt);
     }
 
+    @Override
     public void render(float dt) {
         update(dt);
 
         // clear screen
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
+        
+        batch.begin();
+        
         if (renderBatch) {
-            game.batch.begin();
+            
 
             // fix fading
-            if (batchFade) game.batch.setColor(Color.WHITE);
+            if (batchFade) batch.setColor(Color.WHITE);
 
             if (worldState == WorldState.BATTLING || transitionUI.renderBattle) {
                 // bg camera
-                game.batch.setProjectionMatrix(battleUI.getStage().getCamera().combined);
-                for (int i = 0; i < backgrounds.length; i++) {
-                    backgrounds[i].render(game.batch);
+                batch.setProjectionMatrix(battleUI.getStage().getCamera().combined);
+                for (int i = 0; i < backgroundUIs.length; i++) {
+                    backgroundUIs[i].render(dt);
                 }
             }
 
@@ -233,32 +239,43 @@ public class WorldScreen extends AbstractScreen {
                 transitionUI.renderMap || worldState == WorldState.IN_TILE_EVENT ||
                 worldState == WorldState.DEATH || worldState == WorldState.PAUSE) {
                 // map camera
-                game.batch.setProjectionMatrix(cam.combined);
+                batch.setProjectionMatrix(cam.combined);
                 // render map and player
-                worldData.render(dt, game.batch, cam);
+                worldCoreLogic.render(dt, batch, cam);
             }
-
-            game.batch.end();
+            batch.end();
+            
         }
 
-        if (worldState == WorldState.MOVING || worldState == WorldState.DEATH || worldState == WorldState.PAUSE)
+        if (worldState == WorldState.MOVING || worldState == WorldState.DEATH || worldState == WorldState.PAUSE) {
             hud.render(dt);
-        if (worldState == WorldState.BATTLING || transitionUI.renderBattle)
+        }
+        if (worldState == WorldState.BATTLING || transitionUI.renderBattle) {
             battleUI.render(dt);
-        if (worldState == WorldState.LEVEL_UP || transitionUI.renderLevelUp)
+        }
+        if (worldState == WorldState.LEVEL_UP || transitionUI.renderLevelUp) {
             levelUpUI.render(dt);
-        if (worldState == WorldState.IN_TILE_EVENT) worldDialogUI.render(dt);
-        if (worldState == WorldState.INVENTORY) game.inventoryUI.render(dt);
-        if (worldState == WorldState.TRANSITION) transitionUI.render(dt);
-
+        }
+        if (worldState == WorldState.IN_TILE_EVENT) {
+            dialogUI.render(dt);
+        }
+        if (worldState == WorldState.INVENTORY) {
+            game.inventoryUI.render(dt);
+        }
+        if (worldState == WorldState.TRANSITION) {
+            transitionUI.render(dt);
+        }
+        
+        
         //game.profile("GameScreen");
     }
 
+    @Override
     public void dispose() {
         super.dispose();
         hud.dispose();
         battleUI.dispose();
-        worldDialogUI.dispose();
+        dialogUI.dispose();
         levelUpUI.dispose();
     }
 
@@ -268,6 +285,27 @@ public class WorldScreen extends AbstractScreen {
      */
     public void setWorldState(WorldState event) {
         this.worldState = event;
+    }
+
+    @Override
+    public void handleDialogResult(WorldState event) {
+        switch (event) {
+            case MOVING:
+                worldCoreLogic.player.finishTileInteraction();
+                TextureRegion none = null;
+                this.worldCoreLogic.tileMap.setTile(this.worldCoreLogic.tileMap.toTileCoords(worldCoreLogic.player.getPosition()),
+                        new Tile(-1, none, this.worldCoreLogic.tileMap.toTileCoords(worldCoreLogic.player.getPosition())));
+                // player died from tile
+                if (worldCoreLogic.player.getHp() <= 0) {
+                    this.worldCoreLogic.setDeath();
+                    this.die();
+                    return;
+                }
+                this.setWorldState(WorldState.MOVING);
+                this.hud.toggle(true);
+                break;
+        default:
+    }
     }
 
 }

@@ -1,22 +1,25 @@
 package com.unlucky.parallax;
 
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
-import com.unlucky.main.Unlucky;
+import com.unlucky.Unlucky;
+import com.unlucky.ui.LiteUI;
 
 /**
  * Dynamic parallax background for battle scenes or other screens
  *
  * @author Ming Li
  */
-public class Background {
+public class BackgroundUI extends LiteUI {
 
     public TextureRegion image;
-    private OrthographicCamera cam;
-    public Vector2 scale;
-
+    protected final Vector2 scale;
+    
     private float ax;
     private float ay;
     private int numDrawX;
@@ -26,19 +29,20 @@ public class Background {
     private float dx;
     private float dy;
 
-    public Background(OrthographicCamera cam, Vector2 scale) {
-        this.cam = cam;
-        this.scale = scale;
+    public BackgroundUI(Batch batch, Camera camera, Vector2 scale, ShapeRenderer shapeRenderer) {
+        this(batch, null, camera, scale, shapeRenderer);
     }
 
-    public Background(TextureRegion image, OrthographicCamera cam, Vector2 scale) {
+    public BackgroundUI(Batch batch, TextureRegion image, Camera camera, Vector2 scale, ShapeRenderer shapeRenderer) {
+        super(batch, camera, shapeRenderer);
         this.image = image;
-        this.cam = cam;
         this.scale = scale;
-        numDrawX = (Unlucky.V_WIDTH * 2) / image.getRegionWidth() + 1;
-        numDrawY = (Unlucky.V_HEIGHT * 2) / image.getRegionHeight() + 1;
-
-        fixBleeding(image);
+        
+        if (image != null) {
+            numDrawX = (Unlucky.V_WIDTH * 2) / image.getRegionWidth() + 1;
+            numDrawY = (Unlucky.V_HEIGHT * 2) / image.getRegionHeight() + 1;
+            fixBleeding(image);
+        }
     }
 
     public void setImage(TextureRegion image) {
@@ -76,14 +80,16 @@ public class Background {
         ay += (dy * scale.y) * dt;
     }
 
-    public void render(SpriteBatch batch) {
-        // bg not moving
+
+    @Override
+    public void render(float dt) {
+     // bg not moving
         if (dx == 0 && dy == 0) {
             batch.draw(image, 0, 0);
         }
         else {
-            float x = ((ax + cam.viewportWidth / 2 - cam.position.x) * scale.x) % image.getRegionWidth();
-            float y = ((ay + cam.viewportHeight / 2 - cam.position.y) * scale.y) % image.getRegionHeight();
+            float x = ((ax + camera.viewportWidth / 2 - camera.position.x) * scale.x) % image.getRegionWidth();
+            float y = ((ay + camera.viewportHeight / 2 - camera.position.y) * scale.y) % image.getRegionHeight();
 
             int colOffset = x > 0 ? -1 : 0;
             int rowOffset = y > 0 ? -1 : 0;

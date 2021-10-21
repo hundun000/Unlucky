@@ -15,12 +15,13 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.DragListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.unlucky.Unlucky;
 import com.unlucky.entity.Player;
 import com.unlucky.event.WorldState;
 import com.unlucky.inventory.Equipment;
 import com.unlucky.inventory.Inventory;
 import com.unlucky.inventory.Item;
-import com.unlucky.main.Unlucky;
 import com.unlucky.resource.ResourceManager;
 import com.unlucky.resource.Util;
 import com.unlucky.screen.WorldScreen;
@@ -40,7 +41,8 @@ public class InventoryUI extends WorldUI {
     // if in battle, the player cannot enchant, sell, or equip items and can only use potions
     // if in menu, the player can fully access the inventory
     public boolean inMenu;
-
+    public final Stage secondStage;
+    
     private boolean ended = false;
     public boolean renderHealthBars = false;
 
@@ -85,9 +87,9 @@ public class InventoryUI extends WorldUI {
     private boolean itemSelected = false;
     private Item currentItem;
 
-    public InventoryUI(final Unlucky game, WorldScreen worldScreen, Player player, final ResourceManager rm) {
+    public InventoryUI(final Unlucky game, WorldScreen worldScreen, Player player, final ResourceManager rm, Stage secondStage) {
         super(game, worldScreen, player, rm);
-
+        this.secondStage = secondStage;
         ui = new MovingImageUI(rm.inventoryui372x212, new Vector2(200, 7), new Vector2(7, 7), 225.f, 186, 106);
         ui.setTouchable(Touchable.enabled);
 
@@ -175,57 +177,71 @@ public class InventoryUI extends WorldUI {
         handleStageEvents();
         handleInvButtonEvents();
     }
+    
+    private Stage getCurrentStage() {
+        if (inMenu) {
+            return secondStage;
+        } else {
+            return getCurrentStage();
+        }
+    }
 
     /**
-     * Initializes the type of inventory (menu or in game) and the stage
-     * Adds everything to the stage
+     * Initializes the type of inventory (menu or in game) and the getCurrentStage()
+     * Adds everything to the getCurrentStage()
      *
      * @param inMenu
      * @param s
      */
-    public void initForNewScreen(boolean inMenu, Stage s) {
+    public void initForNewScreen(boolean inMenu) {
         this.inMenu = inMenu;
-        if (inMenu) this.stage = s;
+        Stage currentStage = getCurrentStage();
 
-        stage.addActor(ui);
-        stage.addActor(exitButton);
-        for (int i = 0; i < headers.length; i++) stage.addActor(headers[i]);
-        for (int i = 0; i < stats.length; i++) stage.addActor(stats[i]);
-        stage.addActor(selectedSlot);
-        stage.addActor(tooltip);
+        currentStage.addActor(ui);
+        currentStage.addActor(exitButton);
+        for (int i = 0; i < headers.length; i++)  {
+            currentStage.addActor(headers[i]);
+        }
+        for (int i = 0; i < stats.length; i++) {
+            currentStage.addActor(stats[i]);
+        }
+        currentStage.addActor(selectedSlot);
+        currentStage.addActor(tooltip);
+        
         for (int i = 0; i < 2; i++) {
-            stage.addActor(invButtons[i]);
-            stage.addActor(invButtonLabels[i]);
+            currentStage.addActor(invButtons[i]);
+            currentStage.addActor(invButtonLabels[i]);
         }
 
         if (!inMenu) {
-            // reset the stage position after actions
-            stage.addAction(Actions.moveTo(0, 0));
-            Gdx.input.setInputProcessor(this.stage);
+            // reset the getCurrentStage() position after actions
+            currentStage.addAction(Actions.moveTo(0, 0));
+            Gdx.input.setInputProcessor(currentStage);
             renderHealthBars = true;
         }
     }
 
     /**
-     * Adds inventory items to the stage
+     * Adds inventory items to the getCurrentStage()
      */
     private void addInventory() {
+        
         for (int i = 0; i < Inventory.NUM_SLOTS; i++) {
             Item item = player.inventory.getItem(i);
             if (item != null) {
-                stage.addActor(item.actor);
+                getCurrentStage().addActor(item.actor);
             }
         }
     }
 
     /**
-     * Adds equips to the stage
+     * Adds equips to the getCurrentStage()
      */
     private void addEquips() {
         for (int i = 0; i < Equipment.NUM_SLOTS; i++) {
             Item item = player.equips.getEquipAt(i);
             if (item != null) {
-                stage.addActor(item.actor);
+                getCurrentStage().addActor(item.actor);
             }
         }
     }
@@ -524,7 +540,7 @@ public class InventoryUI extends WorldUI {
                             }
                         }
 
-                    }.show(stage).getTitleLabel().setAlignment(Align.center);
+                    }.show(getCurrentStage()).getTitleLabel().setAlignment(Align.center);
                 }
             }
         });
@@ -560,7 +576,7 @@ public class InventoryUI extends WorldUI {
                             }
                         }
 
-                    }.show(stage).getTitleLabel().setAlignment(Align.center);
+                    }.show(getCurrentStage()).getTitleLabel().setAlignment(Align.center);
                 }
             }
         });
@@ -596,7 +612,7 @@ public class InventoryUI extends WorldUI {
                     player.inventory.addItemAtIndex(scroll, scroll.index);
                 }
             }
-        }.show(stage).getTitleLabel().setAlignment(Align.center);
+        }.show(getCurrentStage()).getTitleLabel().setAlignment(Align.center);
     }
 
     /**
@@ -620,7 +636,7 @@ public class InventoryUI extends WorldUI {
                     tooltip.setVisible(false);
                 }
 
-            }.show(stage).getTitleLabel().setAlignment(Align.center);
+            }.show(getCurrentStage()).getTitleLabel().setAlignment(Align.center);
             return;
         }
 
@@ -654,7 +670,7 @@ public class InventoryUI extends WorldUI {
                     invButtonLabels[1].setText("SELL FOR\n" + currentItem.sell + " g");
                 }
 
-            }.show(stage).getTitleLabel().setAlignment(Align.center);
+            }.show(getCurrentStage()).getTitleLabel().setAlignment(Align.center);
         }
         // enchant failed
         else {
@@ -679,7 +695,7 @@ public class InventoryUI extends WorldUI {
                         unselectItem();
                     }
 
-                }.show(stage).getTitleLabel().setAlignment(Align.center);
+                }.show(getCurrentStage()).getTitleLabel().setAlignment(Align.center);
                 game.saveManager.save();
             } else {
                 new Dialog("Fail!", rm.dialogSkin) {
@@ -699,7 +715,7 @@ public class InventoryUI extends WorldUI {
                         tooltip.setVisible(true);
                     }
 
-                }.show(stage).getTitleLabel().setAlignment(Align.center);
+                }.show(getCurrentStage()).getTitleLabel().setAlignment(Align.center);
             }
         }
     }
@@ -740,7 +756,7 @@ public class InventoryUI extends WorldUI {
                 }
             }
 
-        }.show(stage).getTitleLabel().setAlignment(Align.center);
+        }.show(getCurrentStage()).getTitleLabel().setAlignment(Align.center);
     }
 
     private void unselectItem() {
@@ -813,7 +829,7 @@ public class InventoryUI extends WorldUI {
     public void start() {
         if (!inMenu) {
             game.fps.setPosition(2, 2);
-            stage.addActor(game.fps);
+            getCurrentStage().addActor(game.fps);
 
             // ui slides left to right
             ui.setPosition(200, 7);
@@ -953,14 +969,15 @@ public class InventoryUI extends WorldUI {
     }
 
     public void render(float dt) {
+        Stage currentStage = getCurrentStage();
         if (!inMenu) {
-            stage.act(dt);
-            stage.draw();
+            currentStage.act(dt);
+            currentStage.draw();
         }
 
         if (renderHealthBars) {
             // draw bars
-            shapeRenderer.setProjectionMatrix(stage.getCamera().combined);
+            shapeRenderer.setProjectionMatrix(currentStage.getCamera().combined);
             shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
             // health bar
             shapeRenderer.setColor(60 / 255.f, 60 / 255.f, 60 / 255.f, 1);

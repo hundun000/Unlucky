@@ -3,6 +3,7 @@ package com.unlucky.map;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
@@ -247,7 +248,7 @@ public class TileMap {
      *
      * @param batch
      */
-    public void renderBottomLayer(SpriteBatch batch, OrthographicCamera cam) {
+    public void renderBottomLayer(Batch batch, OrthographicCamera cam) {
         for (int i = 0; i < bottomLayer.length; i++) {
             if (tileInsideCamera(tileMap[i], cam)) {
                 int r = i / mapWidth;
@@ -276,7 +277,7 @@ public class TileMap {
      *
      * @param batch
      */
-    public void render(SpriteBatch batch, OrthographicCamera cam) {
+    public void render(Batch batch, OrthographicCamera cam) {
         for (int i = 0; i < tileMap.length; i++) {
             if (tileInsideCamera(tileMap[i], cam)) {
                 int r = i / mapWidth;
@@ -294,7 +295,7 @@ public class TileMap {
      *
      * @param batch
      */
-    public void renderTopLayer(SpriteBatch batch, OrthographicCamera cam) {
+    public void renderTopLayer(Batch batch, OrthographicCamera cam) {
         for (int i = 0; i < topLayer.length; i++) {
             if (tileInsideCamera(tileMap[i], cam)) {
                 int r = i / mapWidth;

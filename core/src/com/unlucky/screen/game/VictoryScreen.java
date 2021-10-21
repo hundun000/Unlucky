@@ -11,9 +11,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
+import com.unlucky.Unlucky;
 import com.unlucky.inventory.Item;
-import com.unlucky.main.Unlucky;
-import com.unlucky.map.worldData;
+import com.unlucky.map.WorldCoreLogic;
 import com.unlucky.resource.ResourceManager;
 import com.unlucky.screen.AbstractScreen;
 
@@ -41,7 +41,7 @@ public class VictoryScreen extends AbstractScreen {
     private Label info;
     private static final int NUM_COLS = 5;
 
-    private worldData worldData;
+    private WorldCoreLogic WorldCoreLogic;
 
     public VictoryScreen(final Unlucky game, final ResourceManager rm) {
         super(game, rm);
@@ -69,7 +69,7 @@ public class VictoryScreen extends AbstractScreen {
 
         exitButton.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
-                for (Item item : worldData.itemsObtained) item.actor.remove();
+                for (Item item : WorldCoreLogic.itemsObtained) item.actor.remove();
                 game.menuScreen.transitionIn = 0;
                 setFadeScreen(game.menuScreen);
             }
@@ -107,10 +107,10 @@ public class VictoryScreen extends AbstractScreen {
         nextButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                if (worldData.levelIndex != rm.worlds.get(worldData.worldIndex).numLevels - 1) {
+                if (WorldCoreLogic.levelIndex != rm.worlds.get(WorldCoreLogic.worldIndex).numLevels - 1) {
                     // switch back to level select screen
-                    for (Item item : worldData.itemsObtained) item.actor.remove();
-                    game.levelSelectScreen.setWorld(worldData.worldIndex);
+                    for (Item item : WorldCoreLogic.itemsObtained) item.actor.remove();
+                    game.levelSelectScreen.setWorld(WorldCoreLogic.worldIndex);
                     rm.menuTheme.play();
                     setFadeScreen(game.levelSelectScreen);
                 }
@@ -118,8 +118,8 @@ public class VictoryScreen extends AbstractScreen {
         });
     }
 
-    public void init(worldData worldData) {
-        this.worldData = worldData;
+    public void init(WorldCoreLogic WorldCoreLogic) {
+        this.WorldCoreLogic = WorldCoreLogic;
     }
 
     @Override
@@ -140,19 +140,19 @@ public class VictoryScreen extends AbstractScreen {
             }
         }), Actions.fadeIn(0.5f)));
 
-        String infoText = rm.worlds.get(worldData.worldIndex).name + ": " +
-            rm.worlds.get(worldData.worldIndex).levels[worldData.levelIndex].name + " completed!\n\n" +
-            "Time: " + worldData.time + " seconds\n\n" +
-            "Total gold obtained: " + worldData.goldObtained + "\n" +
-            "Total experience obtained: " + worldData.expObtained + "\n\n" +
+        String infoText = rm.worlds.get(WorldCoreLogic.worldIndex).name + ": " +
+            rm.worlds.get(WorldCoreLogic.worldIndex).levels[WorldCoreLogic.levelIndex].name + " completed!\n\n" +
+            "Time: " + WorldCoreLogic.time + " seconds\n\n" +
+            "Total gold obtained: " + WorldCoreLogic.goldObtained + "\n" +
+            "Total experience obtained: " + WorldCoreLogic.expObtained + "\n\n" +
             "Items obtained: ";
         info.setText(infoText);
 
         // show items obtained's image actors in a grid
-        for (int i = 0; i < worldData.itemsObtained.size; i++) {
+        for (int i = 0; i < WorldCoreLogic.itemsObtained.size; i++) {
             int x = i % NUM_COLS;
             int y = i / NUM_COLS;
-            Item item = worldData.itemsObtained.get(i);
+            Item item = WorldCoreLogic.itemsObtained.get(i);
             item.actor.remove();
             item.actor.setPosition(Unlucky.V_WIDTH / 2 - 70 + 8 + (x * 24), 34 - (y * 16));
             stage.addActor(item.actor);

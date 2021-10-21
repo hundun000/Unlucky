@@ -7,7 +7,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
-import com.unlucky.main.Unlucky;
+import com.unlucky.Unlucky;
 import com.unlucky.resource.ResourceManager;
 
 /**
@@ -20,6 +20,7 @@ public abstract class MenuExtensionScreen extends AbstractScreen {
 
     protected ImageButton exitButton;
 
+    
     public MenuExtensionScreen(final Unlucky game, final ResourceManager rm) {
         super(game, rm);
 
@@ -44,8 +45,10 @@ public abstract class MenuExtensionScreen extends AbstractScreen {
             right ? Unlucky.V_WIDTH : -Unlucky.V_WIDTH, 0), Actions.moveTo(0, 0, 0.3f)));
     }
 
+    @Override
     public void update(float dt) {}
 
+    @Override
     public void render(float dt) {
         update(dt);
         for (int i = 0; i < game.menuBackground.length; i++) {
@@ -61,7 +64,7 @@ public abstract class MenuExtensionScreen extends AbstractScreen {
             // fix fading
             if (batchFade) stage.getBatch().setColor(Color.WHITE);
             for (int i = 0; i < game.menuBackground.length; i++) {
-                game.menuBackground[i].render((SpriteBatch) stage.getBatch());
+                game.menuBackground[i].render(dt);
             }
             stage.getBatch().end();
         }

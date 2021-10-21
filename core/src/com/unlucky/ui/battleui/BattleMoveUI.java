@@ -54,9 +54,9 @@ public class BattleMoveUI extends SubBattleUI {
     private int turnCounter = 0;
     private boolean shouldReset = false;
 
-    public BattleMoveUI(WorldScreen worldScreen, Player player, BattleData battleData,
+    public BattleMoveUI(WorldScreen worldScreen, Player player, BattleCoreLogic battleCoreLogic,
                   BattleUI uiHandler, Stage stage, ResourceManager rm) {
-        super(worldScreen, player, battleData, uiHandler, stage, rm);
+        super(worldScreen, player, battleCoreLogic, uiHandler, stage, rm);
 
         this.stage = stage;
         playerSmoveset = new Array<SpecialMove>();
@@ -310,8 +310,8 @@ public class BattleMoveUI extends SubBattleUI {
                     uiHandler.battleMoveUI.toggleMoveAndOptionUI(false);
                     // reshuffle moveset for next turn
                     resetMoves();
-                    String[] dialog = battleData.handleMove(move);
-                    uiHandler.battleDialogResultHandleUI.dialogUI.startDialog(dialog, BattlePhase.PLAYER_TURN, BattlePhase.ENEMY_TURN);
+                    String[] dialog = battleCoreLogic.handleMove(move);
+                    uiHandler.dialogUI.startDialog(dialog, BattlePhase.PLAYER_TURN, BattlePhase.ENEMY_TURN);
                 }
             });
         }
@@ -337,19 +337,19 @@ public class BattleMoveUI extends SubBattleUI {
                     turnCounter = player.smoveCd;
                     resetSpecialMoves();
                 }
-                battleData.buffs[smove.id] = true;
+                battleCoreLogic.buffs[smove.id] = true;
 
-                uiHandler.battleDialogResultHandleUI.dialogUI.startDialog(battleData.getSpecialMoveDialog(smove.id),
+                uiHandler.dialogUI.startDialog(battleCoreLogic.getSpecialMoveDialog(smove.id),
                         BattlePhase.PLAYER_TURN, BattlePhase.PLAYER_TURN);
 
                 // add status icons that should show immediately after dialog
-                if (battleData.buffs[Util.DISTRACT]) battleData.opponent.statusEffects.addEffect(StatusEffect.DISTRACT);
-                if (battleData.buffs[Util.FOCUS]) player.statusEffects.addEffect(StatusEffect.FOCUS);
-                if (battleData.buffs[Util.INTIMIDATE]) player.statusEffects.addEffect(StatusEffect.INTIMIDATE);
-                if (battleData.buffs[Util.REFLECT]) battleData.opponent.statusEffects.addEffect(StatusEffect.REFLECT);
-                if (battleData.buffs[Util.INVERT]) player.statusEffects.addEffect(StatusEffect.INVERT);
-                if (battleData.buffs[Util.SACRIFICE]) player.statusEffects.addEffect(StatusEffect.SACRIFICE);
-                if (battleData.buffs[Util.SHIELD]) player.statusEffects.addEffect(StatusEffect.SHIELD);
+                if (battleCoreLogic.buffs[Util.DISTRACT]) battleCoreLogic.opponent.statusEffects.addEffect(StatusEffect.DISTRACT);
+                if (battleCoreLogic.buffs[Util.FOCUS]) player.statusEffects.addEffect(StatusEffect.FOCUS);
+                if (battleCoreLogic.buffs[Util.INTIMIDATE]) player.statusEffects.addEffect(StatusEffect.INTIMIDATE);
+                if (battleCoreLogic.buffs[Util.REFLECT]) battleCoreLogic.opponent.statusEffects.addEffect(StatusEffect.REFLECT);
+                if (battleCoreLogic.buffs[Util.INVERT]) player.statusEffects.addEffect(StatusEffect.INVERT);
+                if (battleCoreLogic.buffs[Util.SACRIFICE]) player.statusEffects.addEffect(StatusEffect.SACRIFICE);
+                if (battleCoreLogic.buffs[Util.SHIELD]) player.statusEffects.addEffect(StatusEffect.SHIELD);
 
                 // disable button until cooldown over
                 onCd = true;
@@ -376,11 +376,11 @@ public class BattleMoveUI extends SubBattleUI {
                 }
                 // 7% chance to run from the battle
                 if (Util.isSuccess(Util.RUN_FROM_BATTLE)) {
-                    uiHandler.battleDialogResultHandleUI.dialogUI.startDialog(new String[]{
+                    uiHandler.dialogUI.startDialog(new String[]{
                             "You successfully ran from the battle!"
                     }, BattlePhase.PLAYER_TURN, BattlePhase.END_BATTLE);
                 } else {
-                    uiHandler.battleDialogResultHandleUI.dialogUI.startDialog(new String[]{
+                    uiHandler.dialogUI.startDialog(new String[]{
                             "You couldn't run from the battle!"
                     }, BattlePhase.PLAYER_TURN, BattlePhase.ENEMY_TURN);
                 }

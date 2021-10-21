@@ -13,7 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
-import com.unlucky.main.Unlucky;
+import com.unlucky.Unlucky;
 import com.unlucky.resource.ResourceManager;
 
 /**

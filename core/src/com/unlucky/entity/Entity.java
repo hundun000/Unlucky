@@ -1,5 +1,6 @@
 package com.unlucky.entity;
 
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.unlucky.animation.AnimationComponent;
@@ -88,7 +89,7 @@ public abstract class Entity {
         selfAnimationComponent.update(dt);
     }
 
-    public void render(SpriteBatch batch, boolean looping) {
+    public void render(Batch batch, boolean looping) {
         // draw shadow
         batch.draw(rm.shadow11x6, position.x + 3, position.y - 3);
         batch.draw(selfAnimationComponent.getKeyFrame(looping), position.x, position.y);

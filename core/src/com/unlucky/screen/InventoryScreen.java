@@ -2,7 +2,7 @@ package com.unlucky.screen;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-import com.unlucky.main.Unlucky;
+import com.unlucky.Unlucky;
 import com.unlucky.resource.ResourceManager;
 import com.unlucky.ui.inventory.InventoryUI;
 
@@ -39,7 +39,7 @@ public class InventoryScreen extends MenuExtensionScreen {
                 }
             })));
 
-        game.inventoryUI.initForNewScreen(true, this.stage);
+        game.inventoryUI.initForNewScreen(true);
         game.inventoryUI.start();
     }
 

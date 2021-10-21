@@ -18,7 +18,7 @@ import com.unlucky.screen.WorldScreen;
  *
  * @author Ming Li
  */
-public class BattleData {
+public class BattleCoreLogic {
 
     // the enemy the player is facing
     public Enemy opponent;
@@ -41,7 +41,7 @@ public class BattleData {
     // cumulative healing by player over the battle
     public int cumulativeHealing = 0;
 
-    public BattleData(WorldScreen worldScreen, TileMap tileMap, Player player) {
+    public BattleCoreLogic(WorldScreen worldScreen, TileMap tileMap, Player player) {
         this.worldScreen = worldScreen;
         this.tileMap = tileMap;
         this.player = player;
@@ -65,7 +65,7 @@ public class BattleData {
         this.opponent = opponent;
 
         // set opponent's level to be -1 to 1 added to the avg map level
-        opponent.setLevel(Util.getDeviatedRandomValue(worldScreen.worldData.avgLevel, 1));
+        opponent.setLevel(Util.getDeviatedRandomValue(worldScreen.worldCoreLogic.avgLevel, 1));
         if (opponent.getLevel() <= 0) opponent.setLevel(1);
 
         opponent.setStats();
@@ -564,7 +564,7 @@ public class BattleData {
                 // scale item stats to match enemy level
                 item.adjust(opponent.getLevel());
                 player.inventory.addItem(item);
-                worldScreen.worldData.itemsObtained.add(item);
+                worldScreen.worldCoreLogic.itemsObtained.add(item);
             }
         }
 

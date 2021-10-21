@@ -2,7 +2,7 @@ package com.unlucky.ui.battleui;
 
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.unlucky.entity.Player;
-import com.unlucky.event.BattleData;
+import com.unlucky.event.BattleCoreLogic;
 import com.unlucky.map.TileMap;
 import com.unlucky.resource.ResourceManager;
 import com.unlucky.screen.WorldScreen;
@@ -16,15 +16,14 @@ import com.unlucky.ui.UI;
  */
 public abstract class SubBattleUI extends WorldUI {
 
-    protected BattleData battleData;
+    protected BattleCoreLogic battleCoreLogic;
     protected BattleUI uiHandler;
 
-    public SubBattleUI(WorldScreen worldScreen, Player player, BattleData battleData,
+    public SubBattleUI(WorldScreen worldScreen, Player player, BattleCoreLogic battleCoreLogic,
                     BattleUI uiHandler, Stage stage, ResourceManager rm) {
-        super(worldScreen.getGame(), worldScreen, player, rm);
-        this.battleData = battleData;
+        super(worldScreen.getGame(), worldScreen, player, stage, rm);
+        this.battleCoreLogic = battleCoreLogic;
         this.uiHandler = uiHandler;
-        this.stage = stage;
     }
 
 }

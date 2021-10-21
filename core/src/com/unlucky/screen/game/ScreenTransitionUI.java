@@ -2,10 +2,10 @@ package com.unlucky.screen.game;
 
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
+import com.unlucky.Unlucky;
 import com.unlucky.entity.Player;
-import com.unlucky.event.BattleData;
+import com.unlucky.event.BattleCoreLogic;
 import com.unlucky.event.WorldState;
-import com.unlucky.main.Unlucky;
 import com.unlucky.map.TileMap;
 import com.unlucky.map.WeatherType;
 import com.unlucky.resource.ResourceManager;
@@ -124,30 +124,30 @@ public class ScreenTransitionUI extends WorldUI {
         // transition out of battle
         else if (prev == WorldState.BATTLING && next == WorldState.MOVING) {
             battleUI.endBattle();
-            if (!player.settings.muteMusic) worldScreen.worldData.mapTheme.play();
+            if (!player.settings.muteMusic) worldScreen.worldCoreLogic.mapTheme.play();
             if (!player.settings.muteSfx) {
-                if (worldScreen.worldData.weather == WeatherType.RAIN) {
-                    worldScreen.worldData.soundId = rm.lightrain.play(player.settings.sfxVolume);
-                    rm.lightrain.setLooping(worldScreen.worldData.soundId, true);
+                if (worldScreen.worldCoreLogic.weather == WeatherType.RAIN) {
+                    worldScreen.worldCoreLogic.soundId = rm.lightrain.play(player.settings.sfxVolume);
+                    rm.lightrain.setLooping(worldScreen.worldCoreLogic.soundId, true);
                 }
-                else if (worldScreen.worldData.weather == WeatherType.HEAVY_RAIN || worldScreen.worldData.weather == WeatherType.THUNDERSTORM) {
-                    worldScreen.worldData.soundId = rm.heavyrain.play(player.settings.sfxVolume);
-                    rm.heavyrain.setLooping(worldScreen.worldData.soundId, true);
+                else if (worldScreen.worldCoreLogic.weather == WeatherType.HEAVY_RAIN || worldScreen.worldCoreLogic.weather == WeatherType.THUNDERSTORM) {
+                    worldScreen.worldCoreLogic.soundId = rm.heavyrain.play(player.settings.sfxVolume);
+                    rm.heavyrain.setLooping(worldScreen.worldCoreLogic.soundId, true);
                 }
             }
         }
         // transition out of level up screen
         else if (prev == WorldState.LEVEL_UP && next == WorldState.MOVING) {
             battleUI.endBattle();
-            if (!player.settings.muteMusic) worldScreen.worldData.mapTheme.play();
+            if (!player.settings.muteMusic) worldScreen.worldCoreLogic.mapTheme.play();
             if (!player.settings.muteSfx) {
-                if (worldScreen.worldData.weather == WeatherType.RAIN) {
-                    worldScreen.worldData.soundId = rm.lightrain.play(player.settings.sfxVolume);
-                    rm.lightrain.setLooping(worldScreen.worldData.soundId, true);
+                if (worldScreen.worldCoreLogic.weather == WeatherType.RAIN) {
+                    worldScreen.worldCoreLogic.soundId = rm.lightrain.play(player.settings.sfxVolume);
+                    rm.lightrain.setLooping(worldScreen.worldCoreLogic.soundId, true);
                 }
-                else if (worldScreen.worldData.weather == WeatherType.HEAVY_RAIN || worldScreen.worldData.weather == WeatherType.THUNDERSTORM) {
-                    worldScreen.worldData.soundId = rm.heavyrain.play(player.settings.sfxVolume);
-                    rm.heavyrain.setLooping(worldScreen.worldData.soundId, true);
+                else if (worldScreen.worldCoreLogic.weather == WeatherType.HEAVY_RAIN || worldScreen.worldCoreLogic.weather == WeatherType.THUNDERSTORM) {
+                    worldScreen.worldCoreLogic.soundId = rm.heavyrain.play(player.settings.sfxVolume);
+                    rm.heavyrain.setLooping(worldScreen.worldCoreLogic.soundId, true);
                 }
             }
         }

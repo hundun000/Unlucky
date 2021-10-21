@@ -1,8 +1,8 @@
-package com.unlucky.ui.battleui;
+package com.unlucky.ui.dialog;
 
 
 /**
- * 只负责文本管理，不涉及UI
+ * 只负责文本管理，不涉及UI(可复用在其他非libgdx项目)
  * @author hundun
  * Created on 2021/10/21
  */

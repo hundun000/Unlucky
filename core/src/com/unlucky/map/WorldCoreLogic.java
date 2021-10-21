@@ -3,6 +3,7 @@ package com.unlucky.map;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
@@ -29,7 +30,7 @@ import com.unlucky.screen.WorldScreen;
  *
  * @author Ming Li
  */
-public class worldData {
+public class WorldCoreLogic {
 
     // composite id
     public int worldIndex;
@@ -66,7 +67,7 @@ public class worldData {
     // to fix screen switching bug
     private boolean switchable = true;
 
-    public worldData(WorldScreen worldScreen, Player player, ResourceManager rm) {
+    public WorldCoreLogic(WorldScreen worldScreen, Player player, ResourceManager rm) {
         this.worldScreen = worldScreen;
         this.player = player;
         this.rm = rm;
@@ -223,11 +224,11 @@ public class worldData {
             worldScreen.setWorldState(WorldState.IN_TILE_EVENT);
             if (player.getCurrentTile().isQuestionMark()) {
                 player.stats.numQuestionTiles++;
-                worldScreen.worldDialogUI.dialogUI.startDialog(player.getQuestionMarkDialog(avgLevel, this), WorldState.MOVING, WorldState.MOVING);
+                worldScreen.dialogUI.startDialog(player.getQuestionMarkDialog(avgLevel, this), WorldState.MOVING, WorldState.MOVING);
             }
             else if (player.getCurrentTile().isExclamationMark()) {
                 player.stats.numExclamTiles++;
-                worldScreen.worldDialogUI.dialogUI.startDialog(player.getExclamDialog(avgLevel, this), WorldState.MOVING, WorldState.MOVING);
+                worldScreen.dialogUI.startDialog(player.getExclamDialog(avgLevel, this), WorldState.MOVING, WorldState.MOVING);
             }
         }
         // player stepped on teleport tile
@@ -290,7 +291,7 @@ public class worldData {
 
     private boolean sfxPlayed = false;
 
-    public void render(float dt, SpriteBatch batch, OrthographicCamera cam) {
+    public void render(float dt, Batch batch, OrthographicCamera cam) {
         tileMap.renderBottomLayer(batch, cam);
 
         player.render(batch);

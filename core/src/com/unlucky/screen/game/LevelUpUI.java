@@ -234,10 +234,10 @@ public class LevelUpUI extends WorldUI {
         stage.act(dt);
         stage.draw();
 
-        worldScreen.getBatch().setProjectionMatrix(stage.getCamera().combined);
-        worldScreen.getBatch().begin();
-        worldScreen.getBatch().draw(levelUpAnim.getKeyFrame(true), 23, 27);
-        worldScreen.getBatch().end();
+        stage.getBatch().setProjectionMatrix(stage.getCamera().combined);
+        stage.getBatch().begin();
+        stage.getBatch().draw(levelUpAnim.getKeyFrame(true), 23, 27);
+        stage.getBatch().end();
     }
 
 }

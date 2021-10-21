@@ -1,15 +1,16 @@
-package com.unlucky.main;
+package com.unlucky;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.profiling.GLProfiler;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.unlucky.entity.Player;
-import com.unlucky.parallax.Background;
+import com.unlucky.parallax.BackgroundUI;
 import com.unlucky.resource.ResourceManager;
 import com.unlucky.save.SaveManager;
 import com.unlucky.screen.*;
@@ -37,16 +38,13 @@ public class Unlucky extends Game {
     public static final int V_HEIGHT = 120;
     public static final int V_SCALE = 6;
 
-    // Rendering utilities
-    public SpriteBatch batch;
-
-    // Resources
-    public ResourceManager rm;
-
-    // Universal player
+    // frame-component shared between Screens
+    private SpriteBatch batch;
+    private ShapeRenderer shapeRenderer;
+    
+    // game-data shared between Screens
+    private ResourceManager rm;
     public Player player;
-
-    // Game save
     public SaveManager saveManager;
 
     // Screens
@@ -63,16 +61,14 @@ public class Unlucky extends Game {
 
     // UI shared between Screens
     public InventoryUI inventoryUI;
-    
-    
-    // main bg
-    public Background[] menuBackground;
+    public BackgroundUI[] menuBackground;
 
     // debugging
     public Label fps;
 
 	public void create() {
         batch = new SpriteBatch();
+        shapeRenderer = new ShapeRenderer();
         rm = new ResourceManager();
         player = new Player("player", rm);
 
@@ -96,23 +92,23 @@ public class Unlucky extends Game {
         victoryScreen = new VictoryScreen(this, rm);
         settingsScreen = new SettingsScreen(this, rm);
 
-        inventoryUI = new InventoryUI(this, worldScreen, player, rm);
+        inventoryUI = new InventoryUI(this, worldScreen, player, rm, inventoryScreen.getStage());
         
         // create parallax background
-        menuBackground = new Background[3];
+        menuBackground = new BackgroundUI[3];
 
         // ordered by depth
         // sky
-        menuBackground[0] = new Background(rm.titleScreenBackground[0],
-            (OrthographicCamera) menuScreen.getStage().getCamera(), new Vector2(0, 0));
+        menuBackground[0] = new BackgroundUI(batch, rm.titleScreenBackground[0],
+            menuScreen.getStage().getCamera(), new Vector2(0, 0), shapeRenderer);
         menuBackground[0].setVector(0, 0);
         // back clouds
-        menuBackground[1] = new Background(rm.titleScreenBackground[2],
-            (OrthographicCamera) menuScreen.getStage().getCamera(), new Vector2(0.3f, 0));
+        menuBackground[1] = new BackgroundUI(batch, rm.titleScreenBackground[2],
+            menuScreen.getStage().getCamera(), new Vector2(0.3f, 0), shapeRenderer);
         menuBackground[1].setVector(20, 0);
         // front clouds
-        menuBackground[2] = new Background(rm.titleScreenBackground[1],
-            (OrthographicCamera) menuScreen.getStage().getCamera(), new Vector2(0.3f, 0));
+        menuBackground[2] = new BackgroundUI(batch, rm.titleScreenBackground[1],
+            menuScreen.getStage().getCamera(), new Vector2(0.3f, 0), shapeRenderer);
         menuBackground[2].setVector(60, 0);
 
         // profiler
@@ -157,5 +153,15 @@ public class Unlucky extends Game {
             " vertexCount: " + GLProfiler.vertexCount.value);
         GLProfiler.reset();
     }
+	
+	
+	public SpriteBatch getBatch() {
+        return batch;
+    }
+	
+	public ShapeRenderer getShapeRenderer() {
+        return shapeRenderer;
+    }
+
 
 }

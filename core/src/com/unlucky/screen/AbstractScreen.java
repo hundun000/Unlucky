@@ -2,12 +2,14 @@ package com.unlucky.screen;
 
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.unlucky.main.Unlucky;
+import com.unlucky.Unlucky;
 import com.unlucky.resource.ResourceManager;
 
 /**
@@ -18,14 +20,16 @@ import com.unlucky.resource.ResourceManager;
 public abstract class AbstractScreen implements Screen {
 
     protected final Unlucky game;
+    protected final ShapeRenderer shapeRenderer;
+    protected final Batch batch;
     protected final ResourceManager rm;
 
     // camera that focuses on the player
     protected OrthographicCamera cam;
     // viewport that keeps aspect ratios of the game when resizing
-    protected Viewport viewport;
+    protected final Viewport viewport;
     // main stage of each screen
-    protected Stage stage;
+    protected final Stage stage;
 
     // to delay the batch rendering until after transition finishes
     protected boolean renderBatch = false;
@@ -37,14 +41,18 @@ public abstract class AbstractScreen implements Screen {
     public AbstractScreen(final Unlucky game, final ResourceManager rm) {
         this.game = game;
         this.rm = rm;
-
+        this.batch = game.getBatch();
+        this.shapeRenderer = game.getShapeRenderer();
+        
         cam = new OrthographicCamera(Unlucky.V_WIDTH, Unlucky.V_HEIGHT);
         cam.setToOrtho(false);
         // the game will retain it's scaled dimensions regardless of resizing
         viewport = new StretchViewport(Unlucky.V_WIDTH, Unlucky.V_HEIGHT, cam);
 
-        stage = new Stage(viewport, game.batch);
+        stage = new Stage(viewport, batch);
     }
+    
+    public abstract void update(float dt);
 
     @Override
     public void render(float dt) {
@@ -80,8 +88,8 @@ public abstract class AbstractScreen implements Screen {
         return cam;
     }
 
-    public SpriteBatch getBatch() {
-        return game.batch;
+    public Batch getBatch() {
+        return batch;
     }
 
     public Unlucky getGame() { return game; }

@@ -10,12 +10,12 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
+import com.unlucky.Unlucky;
 import com.unlucky.effects.Moving;
 import com.unlucky.entity.Player;
 import com.unlucky.event.WorldState;
 import com.unlucky.inventory.Inventory;
 import com.unlucky.inventory.Item;
-import com.unlucky.main.Unlucky;
 import com.unlucky.map.TileMap;
 import com.unlucky.map.WeatherType;
 import com.unlucky.resource.ResourceManager;
@@ -95,15 +95,15 @@ public class Hud extends WorldUI {
                     toggle(true);
 
                     // play music and sfx
-                    if (!player.settings.muteMusic) worldScreen.worldData.mapTheme.play();
+                    if (!player.settings.muteMusic) worldScreen.worldCoreLogic.mapTheme.play();
                     if (!player.settings.muteSfx) {
-                        if (worldScreen.worldData.weather == WeatherType.RAIN) {
-                            worldScreen.worldData.soundId = rm.lightrain.play(player.settings.sfxVolume);
-                            rm.lightrain.setLooping(worldScreen.worldData.soundId, true);
+                        if (worldScreen.worldCoreLogic.weather == WeatherType.RAIN) {
+                            worldScreen.worldCoreLogic.soundId = rm.lightrain.play(player.settings.sfxVolume);
+                            rm.lightrain.setLooping(worldScreen.worldCoreLogic.soundId, true);
                         }
-                        else if (worldScreen.worldData.weather == WeatherType.HEAVY_RAIN || worldScreen.worldData.weather == WeatherType.THUNDERSTORM) {
-                            worldScreen.worldData.soundId = rm.heavyrain.play(player.settings.sfxVolume);
-                            rm.heavyrain.setLooping(worldScreen.worldData.soundId, true);
+                        else if (worldScreen.worldCoreLogic.weather == WeatherType.HEAVY_RAIN || worldScreen.worldCoreLogic.weather == WeatherType.THUNDERSTORM) {
+                            worldScreen.worldCoreLogic.soundId = rm.heavyrain.play(player.settings.sfxVolume);
+                            rm.heavyrain.setLooping(worldScreen.worldCoreLogic.soundId, true);
                         }
                     }
 
@@ -111,7 +111,7 @@ public class Hud extends WorldUI {
                 }
                 else if (object.equals("settings")) {
                     game.settingsScreen.inGame = true;
-                    game.settingsScreen.worldIndex = worldScreen.worldData.worldIndex;
+                    game.settingsScreen.worldIndex = worldScreen.worldCoreLogic.worldIndex;
                     if (worldScreen.isClickable()) {
                         worldScreen.setClickable(false);
                         worldScreen.setBatchFade(false);
@@ -178,8 +178,8 @@ public class Hud extends WorldUI {
      * the player first enters the level.
      */
     public void startLevelDescriptor() {
-        int worldIndex = worldScreen.worldData.worldIndex;
-        int levelIndex = worldScreen.worldData.levelIndex;
+        int worldIndex = worldScreen.worldCoreLogic.worldIndex;
+        int levelIndex = worldScreen.worldCoreLogic.levelIndex;
         String worldName = rm.worlds.get(worldIndex).name;
         String levelName = rm.worlds.get(worldIndex).levels[levelIndex].name;
 
@@ -335,9 +335,9 @@ public class Hud extends WorldUI {
 
     private void backToMenu() {
         game.menuScreen.transitionIn = 0;
-        if (worldScreen.worldData.weather != WeatherType.NORMAL) {
-            rm.lightrain.stop(worldScreen.worldData.soundId);
-            rm.heavyrain.stop(worldScreen.worldData.soundId);
+        if (worldScreen.worldCoreLogic.weather != WeatherType.NORMAL) {
+            rm.lightrain.stop(worldScreen.worldCoreLogic.soundId);
+            rm.heavyrain.stop(worldScreen.worldCoreLogic.soundId);
         }
         if (worldScreen.isClickable()) {
             worldScreen.setClickable(false);
@@ -348,7 +348,7 @@ public class Hud extends WorldUI {
                     @Override
                     public void run() {
                         worldScreen.setClickable(true);
-                        worldScreen.worldData.mapTheme.stop();
+                        worldScreen.worldCoreLogic.mapTheme.stop();
                         game.setScreen(game.menuScreen);
                     }
                 })));
@@ -356,10 +356,10 @@ public class Hud extends WorldUI {
     }
 
     private void loseObtained() {
-        player.addGold(-worldScreen.worldData.goldObtained);
-        player.addExp(-worldScreen.worldData.expObtained);
-        if (worldScreen.worldData.itemsObtained.size != 0) {
-            for (Item item : worldScreen.worldData.itemsObtained) {
+        player.addGold(-worldScreen.worldCoreLogic.goldObtained);
+        player.addExp(-worldScreen.worldCoreLogic.expObtained);
+        if (worldScreen.worldCoreLogic.itemsObtained.size != 0) {
+            for (Item item : worldScreen.worldCoreLogic.itemsObtained) {
                 for (int i = 0; i < Inventory.NUM_SLOTS; i++) {
                     if (player.inventory.getItem(i) == item)
                         player.inventory.removeItem(i);
@@ -393,9 +393,9 @@ public class Hud extends WorldUI {
                     loseObtained();
                     player.setHp(player.getMaxHp());
                     player.inMap = false;
-                    if (worldScreen.worldData.weather != WeatherType.NORMAL) {
-                        rm.lightrain.stop(worldScreen.worldData.soundId);
-                        rm.heavyrain.stop(worldScreen.worldData.soundId);
+                    if (worldScreen.worldCoreLogic.weather != WeatherType.NORMAL) {
+                        rm.lightrain.stop(worldScreen.worldCoreLogic.soundId);
+                        rm.heavyrain.stop(worldScreen.worldCoreLogic.soundId);
                     }
                     backToMenu();
                 }
@@ -442,7 +442,7 @@ public class Hud extends WorldUI {
             public void clicked(InputEvent event, float x, float y) {
                 toggle(false);
                 worldScreen.setWorldState(WorldState.INVENTORY);
-                worldScreen.getGame().inventoryUI.initForNewScreen(false, null);
+                worldScreen.getGame().inventoryUI.initForNewScreen(false);
                 worldScreen.getGame().inventoryUI.start();
             }
         });
@@ -455,10 +455,10 @@ public class Hud extends WorldUI {
                 toggle(false);
 
                 // pause music and sfx
-                worldScreen.worldData.mapTheme.pause();
-                if (worldScreen.worldData.weather != WeatherType.NORMAL) {
-                    rm.lightrain.stop(worldScreen.worldData.soundId);
-                    rm.heavyrain.stop(worldScreen.worldData.soundId);
+                worldScreen.worldCoreLogic.mapTheme.pause();
+                if (worldScreen.worldCoreLogic.weather != WeatherType.NORMAL) {
+                    rm.lightrain.stop(worldScreen.worldCoreLogic.soundId);
+                    rm.heavyrain.stop(worldScreen.worldCoreLogic.soundId);
                 }
 
                 worldScreen.setWorldState(WorldState.PAUSE);

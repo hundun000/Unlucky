@@ -1,21 +1,23 @@
 package com.unlucky.ui.battleui;
 
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.unlucky.entity.Entity;
 import com.unlucky.resource.Util;
+import com.unlucky.ui.LiteUI;
 
 /**
  * Renders an Entity's health bar and creates a nice hp animation when getting hit
  *
  * @author Ming Li
  */
-public class HealthBar {
-
-    private Stage stage;
-    private ShapeRenderer shapeRenderer;
+public class HealthBarUI extends LiteUI {
 
     private Entity entity;
 
@@ -33,10 +35,9 @@ public class HealthBar {
     private Color healColor = new Color(70 / 255.f, 190 / 255.f, 1, 1);
     private boolean initialized = false;
 
-    public HealthBar(Entity entity, Stage stage, ShapeRenderer shapeRenderer, int max, int hpBarHeight, Vector2 position, Color color) {
+    public HealthBarUI(Batch batch, Entity entity, Camera camera, int max, int hpBarHeight, Vector2 position, Color color, ShapeRenderer shapeRenderer) {
+        super(batch, camera, shapeRenderer);
         this.entity = entity;
-        this.stage = stage;
-        this.shapeRenderer = shapeRenderer;
         this.maxHpBarWidth = max;
         this.hpBarHeight = hpBarHeight;
         this.position = position;
@@ -113,7 +114,7 @@ public class HealthBar {
      * @param dt
      */
     public void render(float dt) {
-        shapeRenderer.setProjectionMatrix(stage.getCamera().combined);
+        shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
         // create black bg
