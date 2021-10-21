@@ -11,19 +11,19 @@ import com.unlucky.inventory.Item;
 import com.unlucky.map.TileMap;
 import com.unlucky.resource.ResourceManager;
 import com.unlucky.resource.Util;
-import com.unlucky.screen.GameScreen;
+import com.unlucky.screen.WorldScreen;
 
 /**
  * Strings together battle events and manages calculations
  *
  * @author Ming Li
  */
-public class Battle {
+public class BattleData {
 
     // the enemy the player is facing
     public Enemy opponent;
 
-    private GameScreen gameScreen;
+    private WorldScreen worldScreen;
     public TileMap tileMap;
     private Player player;
 
@@ -41,8 +41,8 @@ public class Battle {
     // cumulative healing by player over the battle
     public int cumulativeHealing = 0;
 
-    public Battle(GameScreen gameScreen, TileMap tileMap, Player player) {
-        this.gameScreen = gameScreen;
+    public BattleData(WorldScreen worldScreen, TileMap tileMap, Player player) {
+        this.worldScreen = worldScreen;
         this.tileMap = tileMap;
         this.player = player;
 
@@ -65,7 +65,7 @@ public class Battle {
         this.opponent = opponent;
 
         // set opponent's level to be -1 to 1 added to the avg map level
-        opponent.setLevel(Util.getDeviatedRandomValue(gameScreen.gameMap.avgLevel, 1));
+        opponent.setLevel(Util.getDeviatedRandomValue(worldScreen.worldData.avgLevel, 1));
         if (opponent.getLevel() <= 0) opponent.setLevel(1);
 
         opponent.setStats();
@@ -564,7 +564,7 @@ public class Battle {
                 // scale item stats to match enemy level
                 item.adjust(opponent.getLevel());
                 player.inventory.addItem(item);
-                gameScreen.gameMap.itemsObtained.add(item);
+                worldScreen.worldData.itemsObtained.add(item);
             }
         }
 
@@ -578,8 +578,8 @@ public class Battle {
         opponent = null;
         tileMap.removeEntity(tileMap.toTileCoords(player.getPosition()));
         player.finishBattling();
-        gameScreen.setCurrentEvent(EventState.MOVING);
-        gameScreen.hud.toggle(true);
+        worldScreen.setWorldState(WorldState.MOVING);
+        worldScreen.hud.toggle(true);
     }
 
 }

@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.unlucky.main.Unlucky;
 import com.unlucky.resource.ResourceManager;
+import com.unlucky.ui.inventory.InventoryUI;
 
 /**
  * Screen that shows the player's inventory, equips, and stats
@@ -13,6 +14,9 @@ import com.unlucky.resource.ResourceManager;
  */
 public class InventoryScreen extends MenuExtensionScreen {
 
+ // UI shared between Screens
+    public InventoryUI inventoryUI;
+    
     public InventoryScreen(final Unlucky game, final ResourceManager rm) {
         super(game, rm);
     }
@@ -35,7 +39,7 @@ public class InventoryScreen extends MenuExtensionScreen {
                 }
             })));
 
-        game.inventoryUI.init(true, this.stage);
+        game.inventoryUI.initForNewScreen(true, this.stage);
         game.inventoryUI.start();
     }
 

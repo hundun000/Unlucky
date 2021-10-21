@@ -5,14 +5,14 @@ package com.unlucky.event;
  *
  * @author Ming Li
  */
-public enum EventState {
+public enum WorldState {
     NONE,
     MOVING,
     BATTLING,
     TRANSITION,
     LEVEL_UP,
     INVENTORY,
-    TILE_EVENT,
+    IN_TILE_EVENT,
     DEATH,
     PAUSE
 }

@@ -139,11 +139,11 @@ public class LevelSelectScreen extends SelectScreen {
      * Enters the map with the corresponding world, level key
      */
     private void enterGame() {
-        game.gameScreen.init(worldIndex, currentLevelIndex);
-        game.gameScreen.resetGame = true;
+        game.worldScreen.init(worldIndex, currentLevelIndex);
+        game.worldScreen.resetGameAfterFadeInShow = true;
         rm.menuTheme.pause();
         game.player.inMap = true;
-        setFadeScreen(game.gameScreen);
+        setFadeScreen(game.worldScreen);
     }
 
     protected void createScrollPane() {

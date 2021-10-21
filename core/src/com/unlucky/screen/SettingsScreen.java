@@ -60,9 +60,9 @@ public class SettingsScreen extends MenuExtensionScreen {
             public void clicked(InputEvent event, float x, float y) {
                 if (!game.player.settings.muteSfx) rm.buttonclick0.play(game.player.settings.sfxVolume);
                 if (inGame) {
-                    game.gameScreen.resetGame = false;
-                    setFadeScreen(game.gameScreen);
-                    game.gameScreen.hud.settingsDialog.show(game.gameScreen.hud.getStage());
+                    game.worldScreen.resetGameAfterFadeInShow = false;
+                    setFadeScreen(game.worldScreen);
+                    game.worldScreen.hud.settingsDialog.show(game.worldScreen.hud.getStage());
                 }
                 else {
                     game.menuScreen.transitionIn = 2;
@@ -206,8 +206,8 @@ public class SettingsScreen extends MenuExtensionScreen {
                 if (!game.player.settings.muteSfx) rm.buttonclick2.play(game.player.settings.sfxVolume);
                 game.player.settings.showWeatherAnimations = showWeatherAnims.isChecked();
                 if (inGame) {
-                    if (showWeatherAnims.isChecked()) game.gameScreen.gameMap.setWeather(game.gameScreen.gameMap.tileMap.weather);
-                    else game.gameScreen.gameMap.setWeather(0);
+                    if (showWeatherAnims.isChecked()) game.worldScreen.worldData.setWeather(game.worldScreen.worldData.tileMap.weather);
+                    else game.worldScreen.worldData.setWeather(0);
                 }
                 if (!inGame) game.saveManager.save();
             }

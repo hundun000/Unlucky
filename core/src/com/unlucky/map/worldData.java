@@ -11,12 +11,12 @@ import com.badlogic.gdx.utils.Array;
 import com.unlucky.effects.Particle;
 import com.unlucky.effects.ParticleFactory;
 import com.unlucky.entity.Player;
-import com.unlucky.event.EventState;
+import com.unlucky.event.WorldState;
 import com.unlucky.inventory.Inventory;
 import com.unlucky.inventory.Item;
 import com.unlucky.resource.ResourceManager;
 import com.unlucky.resource.Util;
-import com.unlucky.screen.GameScreen;
+import com.unlucky.screen.WorldScreen;
 
 /**
  * Stores a tile map and the player configured with map
@@ -29,7 +29,7 @@ import com.unlucky.screen.GameScreen;
  *
  * @author Ming Li
  */
-public class GameMap {
+public class worldData {
 
     // composite id
     public int worldIndex;
@@ -43,7 +43,7 @@ public class GameMap {
     public TileMap tileMap;
     public Player player;
     private ParticleFactory particleFactory;
-    public GameScreen gameScreen;
+    public WorldScreen worldScreen;
     private ResourceManager rm;
 
     public boolean renderLight;
@@ -66,12 +66,12 @@ public class GameMap {
     // to fix screen switching bug
     private boolean switchable = true;
 
-    public GameMap(GameScreen gameScreen, Player player, ResourceManager rm) {
-        this.gameScreen = gameScreen;
+    public worldData(WorldScreen worldScreen, Player player, ResourceManager rm) {
+        this.worldScreen = worldScreen;
         this.player = player;
         this.rm = rm;
         itemsObtained = new Array<Item>();
-        particleFactory = new ParticleFactory(gameScreen.getCamera(), rm);
+        particleFactory = new ParticleFactory(worldScreen.getCamera(), rm);
     }
 
     /**
@@ -94,7 +94,7 @@ public class GameMap {
         goldObtained = 0;
         time = 0;
         player.completedMap = false;
-        player.getSelfAnimation().setAnimation(0);
+        player.getSelfAnimationComponent().setAnimation(0);
 
         tileMap = new TileMap(16, "maps/w" + worldIndex + "_l" + levelIndex + ".txt", new Vector2(0, 0), rm);
         // set lighting
@@ -186,7 +186,7 @@ public class GameMap {
         }
         String deathText = "You lost " + goldLost + " G and " + expLost + " EXP.\n" +
             (itemsObtained.size == 0 ? "\nClick to continue..." : "You also lost the following items: " + itemText);
-        gameScreen.hud.setDeathText(deathText);
+        worldScreen.hud.setDeathText(deathText);
 
         // apply death penalties
         player.addGold(-goldLost);
@@ -207,40 +207,40 @@ public class GameMap {
 
         // engage in battle if found
         if (player.isBattling()) {
-            gameScreen.hud.toggle(false);
+            worldScreen.hud.toggle(false);
             mapTheme.pause();
             if (!player.settings.muteMusic) rm.battlestart.play(player.settings.musicVolume);
             if (weather != WeatherType.NORMAL) {
                 rm.lightrain.stop(soundId);
                 rm.heavyrain.stop(soundId);
             }
-            gameScreen.setCurrentEvent(EventState.TRANSITION);
-            gameScreen.transition.start(EventState.MOVING, EventState.BATTLING);
+            worldScreen.setWorldState(WorldState.TRANSITION);
+            worldScreen.transitionUI.start(WorldState.MOVING, WorldState.BATTLING);
         }
         // player stepped on interaction tile
         if (player.isTileInteraction()) {
-            gameScreen.hud.toggle(false);
-            gameScreen.setCurrentEvent(EventState.TILE_EVENT);
+            worldScreen.hud.toggle(false);
+            worldScreen.setWorldState(WorldState.IN_TILE_EVENT);
             if (player.getCurrentTile().isQuestionMark()) {
                 player.stats.numQuestionTiles++;
-                gameScreen.dialog.startDialog(player.getQuestionMarkDialog(avgLevel, this), EventState.MOVING, EventState.MOVING);
+                worldScreen.worldDialogUI.dialogUI.startDialog(player.getQuestionMarkDialog(avgLevel, this), WorldState.MOVING, WorldState.MOVING);
             }
             else if (player.getCurrentTile().isExclamationMark()) {
                 player.stats.numExclamTiles++;
-                gameScreen.dialog.startDialog(player.getExclamDialog(avgLevel, this), EventState.MOVING, EventState.MOVING);
+                worldScreen.worldDialogUI.dialogUI.startDialog(player.getExclamDialog(avgLevel, this), WorldState.MOVING, WorldState.MOVING);
             }
         }
         // player stepped on teleport tile
         if (player.isTeleporting()) {
-            gameScreen.hud.toggle(false);
+            worldScreen.hud.toggle(false);
             if (!player.settings.muteSfx) rm.teleport.play(player.settings.sfxVolume);
             player.stats.numTeleports++;
-            gameScreen.setCurrentEvent(EventState.TRANSITION);
-            gameScreen.transition.start(EventState.MOVING, EventState.MOVING);
+            worldScreen.setWorldState(WorldState.TRANSITION);
+            worldScreen.transitionUI.start(WorldState.MOVING, WorldState.MOVING);
         }
         // player won the map and switch to victory screen
         if (player.completedMap) {
-            player.getSelfAnimation().stopAnimation();
+            player.getSelfAnimationComponent().stopAnimation();
             player.setHp(player.getMaxHp());
             player.inMap = false;
             if (!player.settings.muteSfx) rm.finish.play(player.settings.sfxVolume);
@@ -263,21 +263,21 @@ public class GameMap {
             }
             player.stats.numDungeonsWon++;
             player.stats.goldGainedFromMaps += goldObtained;
-            gameScreen.getGame().saveManager.save();
+            worldScreen.getGame().saveManager.save();
 
-            gameScreen.setCurrentEvent(EventState.PAUSE);
+            worldScreen.setWorldState(WorldState.PAUSE);
             player.moving = -1;
-            gameScreen.getGame().victoryScreen.init(this);
+            worldScreen.getGame().victoryScreen.init(this);
             if (switchable) {
                 switchable = false;
-                gameScreen.hud.getStage().addAction(Actions.sequence(Actions.fadeOut(0.3f),
+                worldScreen.hud.getStage().addAction(Actions.sequence(Actions.fadeOut(0.3f),
                     Actions.run(new Runnable() {
                         @Override
                         public void run() {
                             switchable = true;
-                            gameScreen.setClickable(true);
+                            worldScreen.setClickable(true);
                             mapTheme.stop();
-                            gameScreen.getGame().setScreen(gameScreen.getGame().victoryScreen);
+                            worldScreen.getGame().setScreen(worldScreen.getGame().victoryScreen);
                         }
                     })));
             }

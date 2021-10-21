@@ -2,7 +2,7 @@ package com.unlucky.entity.enemy;
 
 import com.badlogic.gdx.math.Vector2;
 import com.unlucky.animation.AnimationComponent;
-import com.unlucky.battle.Moveset;
+import com.unlucky.battle.MoveComponent;
 import com.unlucky.battle.StatusSet;
 import com.unlucky.entity.Entity;
 import com.unlucky.map.TileMap;
@@ -30,7 +30,7 @@ public abstract class Enemy extends Entity {
 
     public Enemy(String id, Vector2 position, TileMap tileMap, ResourceManager rm) {
         super(id, position, tileMap, rm);
-        moveset = new Moveset(rm);
+        moveComponent = new MoveComponent(rm);
         statusEffects = new StatusSet(false, rm);
         battleSize = 48;
         numRespawn = 0;

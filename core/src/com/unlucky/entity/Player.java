@@ -4,14 +4,14 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 import com.unlucky.animation.AnimationComponent;
-import com.unlucky.battle.Moveset;
+import com.unlucky.battle.MoveComponent;
 import com.unlucky.battle.SpecialMoveset;
 import com.unlucky.battle.StatusSet;
 import com.unlucky.entity.enemy.Enemy;
 import com.unlucky.inventory.Equipment;
 import com.unlucky.inventory.Inventory;
 import com.unlucky.inventory.Item;
-import com.unlucky.map.GameMap;
+import com.unlucky.map.worldData;
 import com.unlucky.map.Tile;
 import com.unlucky.resource.ResourceManager;
 import com.unlucky.resource.Statistics;
@@ -109,13 +109,13 @@ public class Player extends Entity {
         maxExp = Util.calculateMaxExp(1, MathUtils.random(3, 5));
 
         // create tilemap animation
-        selfAnimation = new AnimationComponent(rm.sprites16x16, Util.PLAYER_WALKING, Util.PLAYER_WALKING_DELAY);
+        selfAnimationComponent = new AnimationComponent(rm.sprites16x16, Util.PLAYER_WALKING, Util.PLAYER_WALKING_DELAY);
         // create battle scene animation
-        battleAnimation = new AnimationComponent(rm.battleSprites96x96, 2, Util.PLAYER_WALKING, 2 / 5f);
+        battleAnimationComponent = new AnimationComponent(rm.battleSprites96x96, 2, Util.PLAYER_WALKING, 2 / 5f);
 
-        moveset = new Moveset(rm);
+        moveComponent = new MoveComponent(rm);
         // damage seed is a random number between the damage range
-        moveset.reset(minDamage, maxDamage, maxHp);
+        moveComponent.reset(minDamage, maxDamage, maxHp);
 
         statusEffects = new StatusSet(true, rm);
         smoveset = new SpecialMoveset();
@@ -139,7 +139,7 @@ public class Player extends Entity {
     public void render(SpriteBatch batch) {
         // draw shadow
         batch.draw(rm.shadow11x6, position.x + 3, position.y - 3);
-        batch.draw(selfAnimation.getKeyFrame(true), position.x + 1, position.y);
+        batch.draw(selfAnimationComponent.getKeyFrame(true), position.x + 1, position.y);
     }
 
     /**
@@ -229,7 +229,7 @@ public class Player extends Entity {
         Tile currentTile = tileMap.getTile(cx, cy);
 
         if (currentTile.isSpecial()) {
-            selfAnimation.currentAnimation.stop();
+            selfAnimationComponent.currentAnimation.stop();
         }
 
         if (canMove()) {
@@ -308,21 +308,25 @@ public class Player extends Entity {
             else if (currentTile.isIce()) {
                 if (!nextTileBlocked(prevDir)) {
                     move(prevDir);
-                    selfAnimation.setAnimation(prevDir);
-                    selfAnimation.stopAnimation();
-                    pauseSelfAnimation = true;
+                    selfAnimationComponent.setAnimation(prevDir);
+                    selfAnimationComponent.stopAnimation();
+                    selfAnimationComponent.setPause(true);
                 }
             }
             // map completed
-            else if (currentTile.isEnd()) completedMap = true;
-            else pauseSelfAnimation = false;
+            else if (currentTile.isEnd()) {
+                completedMap = true;
+            }
+            else {
+                selfAnimationComponent.setPause(false);
+            }
         }
     }
 
     public void changeDirection(int dir) {
         move(dir);
         prevDir = dir;
-        selfAnimation.setAnimation(dir);
+        selfAnimationComponent.setAnimation(dir);
     }
 
     /**
@@ -506,7 +510,7 @@ public class Player extends Entity {
      *
      * @return
      */
-    public String[] getQuestionMarkDialog(int mapLevel, GameMap gameMap) {
+    public String[] getQuestionMarkDialog(int mapLevel, worldData worldData) {
         String[] ret = null;
 
         if (Util.isSuccess(Util.TILE_INTERATION)) {
@@ -519,7 +523,7 @@ public class Player extends Entity {
                     gold += MathUtils.random(7, 13);
                 }
                 this.gold += gold;
-                gameMap.goldObtained += gold;
+                worldData.goldObtained += gold;
                 ret = new String[] {
                     "The random tile gave something!",
                     "You obtained " + gold + " gold!"
@@ -556,7 +560,7 @@ public class Player extends Entity {
                     };
                     item.adjust(mapLevel);
                     inventory.addItem(item);
-                    gameMap.itemsObtained.add(item);
+                    worldData.itemsObtained.add(item);
                 }
             }
         }
@@ -577,7 +581,7 @@ public class Player extends Entity {
      * @param mapLevel
      * @return
      */
-    public String[] getExclamDialog(int mapLevel, GameMap gameMap) {
+    public String[] getExclamDialog(int mapLevel, worldData worldData) {
         String[] ret = null;
 
         if (Util.isSuccess(Util.TILE_INTERATION)) {

@@ -20,14 +20,14 @@ import com.unlucky.event.*;
 import com.unlucky.map.TileMap;
 import com.unlucky.resource.ResourceManager;
 import com.unlucky.resource.Util;
-import com.unlucky.screen.GameScreen;
+import com.unlucky.screen.WorldScreen;
 
 /**
  * Creates and handle the random move buttons and two other options in the battle phase
  *
  * @author Ming Li
  */
-public class MoveUI extends BattleUI {
+public class BattleMoveUI extends SubBattleUI {
 
     private Stage stage;
 
@@ -54,9 +54,9 @@ public class MoveUI extends BattleUI {
     private int turnCounter = 0;
     private boolean shouldReset = false;
 
-    public MoveUI(GameScreen gameScreen, TileMap tileMap, Player player, Battle battle,
-                  com.unlucky.ui.battleui.BattleUIHandler uiHandler, Stage stage, ResourceManager rm) {
-        super(gameScreen, tileMap, player, battle, uiHandler, rm);
+    public BattleMoveUI(WorldScreen worldScreen, Player player, BattleData battleData,
+                  BattleUI uiHandler, Stage stage, ResourceManager rm) {
+        super(worldScreen, player, battleData, uiHandler, stage, rm);
 
         this.stage = stage;
         playerSmoveset = new Array<SpecialMove>();
@@ -306,12 +306,12 @@ public class MoveUI extends BattleUI {
                     }
                     player.stats.numMovesUsed++;
                     Move move = player.getMoveset().moveset[index];
-                    uiHandler.currentState = com.unlucky.event.BattleState.DIALOG;
-                    uiHandler.moveUI.toggleMoveAndOptionUI(false);
+                    uiHandler.currentState = com.unlucky.event.BattleScreenState.DIALOG;
+                    uiHandler.battleMoveUI.toggleMoveAndOptionUI(false);
                     // reshuffle moveset for next turn
                     resetMoves();
-                    String[] dialog = battle.handleMove(move);
-                    uiHandler.battleEventHandler.startDialog(dialog, BattleEvent.PLAYER_TURN, BattleEvent.ENEMY_TURN);
+                    String[] dialog = battleData.handleMove(move);
+                    uiHandler.battleDialogResultHandleUI.dialogUI.startDialog(dialog, BattlePhase.PLAYER_TURN, BattlePhase.ENEMY_TURN);
                 }
             });
         }
@@ -327,8 +327,8 @@ public class MoveUI extends BattleUI {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 if (!player.settings.muteSfx) rm.moveselectclick.play(player.settings.sfxVolume);
-                uiHandler.currentState = com.unlucky.event.BattleState.DIALOG;
-                uiHandler.moveUI.toggleMoveAndOptionUI(false);
+                uiHandler.currentState = com.unlucky.event.BattleScreenState.DIALOG;
+                uiHandler.battleMoveUI.toggleMoveAndOptionUI(false);
                 player.stats.numSMovesUsed++;
                 // remove current smove from pool
                 playerSmoveset.removeValue(smove, false);
@@ -337,19 +337,19 @@ public class MoveUI extends BattleUI {
                     turnCounter = player.smoveCd;
                     resetSpecialMoves();
                 }
-                battle.buffs[smove.id] = true;
+                battleData.buffs[smove.id] = true;
 
-                uiHandler.battleEventHandler.startDialog(battle.getSpecialMoveDialog(smove.id),
-                        BattleEvent.PLAYER_TURN, BattleEvent.PLAYER_TURN);
+                uiHandler.battleDialogResultHandleUI.dialogUI.startDialog(battleData.getSpecialMoveDialog(smove.id),
+                        BattlePhase.PLAYER_TURN, BattlePhase.PLAYER_TURN);
 
                 // add status icons that should show immediately after dialog
-                if (battle.buffs[Util.DISTRACT]) battle.opponent.statusEffects.addEffect(StatusEffect.DISTRACT);
-                if (battle.buffs[Util.FOCUS]) player.statusEffects.addEffect(StatusEffect.FOCUS);
-                if (battle.buffs[Util.INTIMIDATE]) player.statusEffects.addEffect(StatusEffect.INTIMIDATE);
-                if (battle.buffs[Util.REFLECT]) battle.opponent.statusEffects.addEffect(StatusEffect.REFLECT);
-                if (battle.buffs[Util.INVERT]) player.statusEffects.addEffect(StatusEffect.INVERT);
-                if (battle.buffs[Util.SACRIFICE]) player.statusEffects.addEffect(StatusEffect.SACRIFICE);
-                if (battle.buffs[Util.SHIELD]) player.statusEffects.addEffect(StatusEffect.SHIELD);
+                if (battleData.buffs[Util.DISTRACT]) battleData.opponent.statusEffects.addEffect(StatusEffect.DISTRACT);
+                if (battleData.buffs[Util.FOCUS]) player.statusEffects.addEffect(StatusEffect.FOCUS);
+                if (battleData.buffs[Util.INTIMIDATE]) player.statusEffects.addEffect(StatusEffect.INTIMIDATE);
+                if (battleData.buffs[Util.REFLECT]) battleData.opponent.statusEffects.addEffect(StatusEffect.REFLECT);
+                if (battleData.buffs[Util.INVERT]) player.statusEffects.addEffect(StatusEffect.INVERT);
+                if (battleData.buffs[Util.SACRIFICE]) player.statusEffects.addEffect(StatusEffect.SACRIFICE);
+                if (battleData.buffs[Util.SHIELD]) player.statusEffects.addEffect(StatusEffect.SHIELD);
 
                 // disable button until cooldown over
                 onCd = true;
@@ -367,8 +367,8 @@ public class MoveUI extends BattleUI {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 if (!player.settings.muteSfx) rm.moveselectclick.play(player.settings.sfxVolume);
-                uiHandler.currentState = com.unlucky.event.BattleState.DIALOG;
-                uiHandler.moveUI.toggleMoveAndOptionUI(false);
+                uiHandler.currentState = com.unlucky.event.BattleScreenState.DIALOG;
+                uiHandler.battleMoveUI.toggleMoveAndOptionUI(false);
                 if (onCd) turnCounter++;
                 else {
                     smove = playerSmoveset.random();
@@ -376,13 +376,13 @@ public class MoveUI extends BattleUI {
                 }
                 // 7% chance to run from the battle
                 if (Util.isSuccess(Util.RUN_FROM_BATTLE)) {
-                    uiHandler.battleEventHandler.startDialog(new String[]{
+                    uiHandler.battleDialogResultHandleUI.dialogUI.startDialog(new String[]{
                             "You successfully ran from the battle!"
-                    }, BattleEvent.PLAYER_TURN, BattleEvent.END_BATTLE);
+                    }, BattlePhase.PLAYER_TURN, BattlePhase.END_BATTLE);
                 } else {
-                    uiHandler.battleEventHandler.startDialog(new String[]{
+                    uiHandler.battleDialogResultHandleUI.dialogUI.startDialog(new String[]{
                             "You couldn't run from the battle!"
-                    }, BattleEvent.PLAYER_TURN, BattleEvent.ENEMY_TURN);
+                    }, BattlePhase.PLAYER_TURN, BattlePhase.ENEMY_TURN);
                 }
                 optionButtons[1].setTouchable(Touchable.disabled);
                 optionButtons[1].setStyle(disabled[1]);

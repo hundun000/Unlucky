@@ -26,9 +26,9 @@ public class Normal extends Enemy {
         this(id, position, tileMap, rm);
 
         // create tilemap animation
-        selfAnimation = new AnimationComponent(rm.sprites16x16, worldIndex, startIndex, numFrames, delay);
+        selfAnimationComponent = new AnimationComponent(rm.sprites16x16, worldIndex, startIndex, numFrames, delay);
         // create battle scene animation
-        battleAnimation = new AnimationComponent(rm.battleSprites96x96, worldIndex, startIndex, 2, delay);
+        battleAnimationComponent = new AnimationComponent(rm.battleSprites96x96, worldIndex, startIndex, 2, delay);
 
         // determine if elite
         isElite = Util.isSuccess(Util.ELITE_CHANCE);

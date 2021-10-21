@@ -2,10 +2,11 @@ package com.unlucky.ui.battleui;
 
 
 /**
+ * 只负责文本管理，不涉及UI
  * @author hundun
  * Created on 2021/10/21
  */
-public class DialogList {
+public class DialogContent {
     
     public enum TextCycleState {
         IDLE,
@@ -26,7 +27,7 @@ public class DialogList {
     private TextCycleState cycleState;
     float speed;
     
-    public DialogList(String[] dialog, float speed) {
+    public DialogContent(String[] dialog, float speed) {
         this.currentDialogList = dialog;
         currentText = currentDialogList[0];
         cycleState = TextCycleState.CYCLING;

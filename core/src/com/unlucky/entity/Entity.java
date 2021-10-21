@@ -4,7 +4,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.unlucky.animation.AnimationComponent;
 import com.unlucky.battle.MoveType;
-import com.unlucky.battle.Moveset;
+import com.unlucky.battle.MoveComponent;
 import com.unlucky.map.Tile;
 import com.unlucky.map.TileMap;
 import com.unlucky.resource.ResourceManager;
@@ -20,10 +20,10 @@ public abstract class Entity {
     protected ResourceManager rm;
 
     // animation
-    protected AnimationComponent selfAnimation;
-    protected boolean pauseSelfAnimation = false;
+    protected AnimationComponent selfAnimationComponent;
+    
     // battle scene animation
-    protected AnimationComponent battleAnimation;
+    protected AnimationComponent battleAnimationComponent;
 
     // position (x,y) in map coordinates (tile * tileSize)
     protected Vector2 position;
@@ -33,7 +33,7 @@ public abstract class Entity {
 
     /******** RPG ASPECTS *********/
 
-    protected Moveset moveset;
+    protected MoveComponent moveComponent;
 
     protected boolean dead = false;
 
@@ -85,15 +85,13 @@ public abstract class Entity {
         }
 
         // animation
-        if (!pauseSelfAnimation) {
-            selfAnimation.update(dt);
-        }
+        selfAnimationComponent.update(dt);
     }
 
     public void render(SpriteBatch batch, boolean looping) {
         // draw shadow
         batch.draw(rm.shadow11x6, position.x + 3, position.y - 3);
-        batch.draw(selfAnimation.getKeyFrame(looping), position.x, position.y);
+        batch.draw(selfAnimationComponent.getKeyFrame(looping), position.x, position.y);
     }
 
     /**
@@ -208,9 +206,9 @@ public abstract class Entity {
         this.position = position;
     }
 
-    public AnimationComponent getSelfAnimation() { return selfAnimation; }
+    public AnimationComponent getSelfAnimationComponent() { return selfAnimationComponent; }
 
-    public AnimationComponent getBattleAnimation() { return battleAnimation; }
+    public AnimationComponent getBattleAnimationComponent() { return battleAnimationComponent; }
 
     public String getId() {
         return id;
@@ -220,7 +218,7 @@ public abstract class Entity {
         return position;
     }
 
-    public Moveset getMoveset() { return moveset; }
+    public MoveComponent getMoveset() { return moveComponent; }
 
     public int getHp() {
         return hp;

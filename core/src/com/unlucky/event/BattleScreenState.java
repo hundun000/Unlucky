@@ -5,7 +5,7 @@ package com.unlucky.event;
  *
  * @author Ming Li
  */
-public enum BattleState {
+public enum BattleScreenState {
     NONE,
     MOVE,
     DIALOG,

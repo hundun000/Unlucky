@@ -16,13 +16,15 @@ import com.badlogic.gdx.scenes.scene2d.utils.DragListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.unlucky.entity.Player;
-import com.unlucky.event.EventState;
+import com.unlucky.event.WorldState;
 import com.unlucky.inventory.Equipment;
 import com.unlucky.inventory.Inventory;
 import com.unlucky.inventory.Item;
 import com.unlucky.main.Unlucky;
 import com.unlucky.resource.ResourceManager;
 import com.unlucky.resource.Util;
+import com.unlucky.screen.WorldScreen;
+import com.unlucky.screen.game.WorldUI;
 import com.unlucky.ui.MovingImageUI;
 import com.unlucky.ui.UI;
 
@@ -32,7 +34,7 @@ import com.unlucky.ui.UI;
  *
  * @author Ming Li
  */
-public class InventoryUI extends UI {
+public class InventoryUI extends WorldUI {
 
     // whether or not the player is in battle or in the menu screen
     // if in battle, the player cannot enchant, sell, or equip items and can only use potions
@@ -83,8 +85,8 @@ public class InventoryUI extends UI {
     private boolean itemSelected = false;
     private Item currentItem;
 
-    public InventoryUI(final Unlucky game, Player player, final ResourceManager rm) {
-        super(game, player, rm);
+    public InventoryUI(final Unlucky game, WorldScreen worldScreen, Player player, final ResourceManager rm) {
+        super(game, worldScreen, player, rm);
 
         ui = new MovingImageUI(rm.inventoryui372x212, new Vector2(200, 7), new Vector2(7, 7), 225.f, 186, 106);
         ui.setTouchable(Touchable.enabled);
@@ -165,7 +167,7 @@ public class InventoryUI extends UI {
                     game.inventoryScreen.setSlideScreen(game.menuScreen, true);
                 }
                 else {
-                    Gdx.input.setInputProcessor(gameScreen.multiplexer);
+                    Gdx.input.setInputProcessor(worldScreen.multiplexer);
                 }
             }
         });
@@ -181,9 +183,8 @@ public class InventoryUI extends UI {
      * @param inMenu
      * @param s
      */
-    public void init(boolean inMenu, Stage s) {
+    public void initForNewScreen(boolean inMenu, Stage s) {
         this.inMenu = inMenu;
-        this.gameScreen = game.gameScreen;
         if (inMenu) this.stage = s;
 
         stage.addActor(ui);
@@ -855,8 +856,8 @@ public class InventoryUI extends UI {
         removeInventoryActors();
         renderHealthBars = false;
 
-        gameScreen.setCurrentEvent(EventState.MOVING);
-        gameScreen.hud.toggle(true);
+        worldScreen.setWorldState(WorldState.MOVING);
+        worldScreen.hud.toggle(true);
         ended = false;
     }
 

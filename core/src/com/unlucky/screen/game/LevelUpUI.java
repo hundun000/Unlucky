@@ -11,10 +11,10 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.unlucky.animation.AnimationComponent;
 import com.unlucky.entity.Player;
-import com.unlucky.event.EventState;
+import com.unlucky.event.WorldState;
 import com.unlucky.map.TileMap;
 import com.unlucky.resource.ResourceManager;
-import com.unlucky.screen.GameScreen;
+import com.unlucky.screen.WorldScreen;
 import com.unlucky.ui.UI;
 
 import java.util.Arrays;
@@ -25,7 +25,7 @@ import java.util.Arrays;
  *
  * @author Ming Li
  */
-public class LevelUpScreen extends UI {
+public class LevelUpUI extends WorldUI {
 
     // Scene2D
     private ImageButton ui;
@@ -50,8 +50,8 @@ public class LevelUpScreen extends UI {
     private int[] increasedStats = new int[5];
     private float statsTime = 0;
 
-    public LevelUpScreen(GameScreen gameScreen, TileMap tileMap, Player player, ResourceManager rm) {
-        super(gameScreen, tileMap, player, rm);
+    public LevelUpUI(WorldScreen worldScreen, Player player, ResourceManager rm) {
+        super(worldScreen.getGame(), worldScreen, player, rm);
 
         // create bg
         ImageButton.ImageButtonStyle style = new ImageButton.ImageButtonStyle();
@@ -164,8 +164,8 @@ public class LevelUpScreen extends UI {
             public void clicked(InputEvent event, float x, float y) {
                 if (sAnimFinished) {
                     // switch to transition screen
-                    gameScreen.setCurrentEvent(EventState.TRANSITION);
-                    gameScreen.transition.start(EventState.LEVEL_UP, EventState.MOVING);
+                    worldScreen.setWorldState(WorldState.TRANSITION);
+                    worldScreen.transitionUI.start(WorldState.LEVEL_UP, WorldState.MOVING);
                     reset();
                 }
                 // start
@@ -234,10 +234,10 @@ public class LevelUpScreen extends UI {
         stage.act(dt);
         stage.draw();
 
-        gameScreen.getBatch().setProjectionMatrix(stage.getCamera().combined);
-        gameScreen.getBatch().begin();
-        gameScreen.getBatch().draw(levelUpAnim.getKeyFrame(true), 23, 27);
-        gameScreen.getBatch().end();
+        worldScreen.getBatch().setProjectionMatrix(stage.getCamera().combined);
+        worldScreen.getBatch().begin();
+        worldScreen.getBatch().draw(levelUpAnim.getKeyFrame(true), 23, 27);
+        worldScreen.getBatch().end();
     }
 
 }

@@ -9,7 +9,7 @@ import com.unlucky.resource.ResourceManager;
  *
  * @author Ming Li
  */
-public class Moveset {
+public class MoveComponent {
 
     private ResourceManager rm;
 
@@ -24,7 +24,7 @@ public class Moveset {
     public String[] names;
     public String[] descriptions;
 
-    public Moveset(ResourceManager rm) {
+    public MoveComponent(ResourceManager rm) {
         this.rm = rm;
 
         moveset = new Move[4];

@@ -51,17 +51,20 @@ public class Unlucky extends Game {
 
     // Screens
     public MenuScreen menuScreen;
-    public GameScreen gameScreen;
+    public WorldScreen worldScreen;
     public WorldSelectScreen worldSelectScreen;
     public LevelSelectScreen levelSelectScreen;
     public InventoryScreen inventoryScreen;
     public ShopScreen shopScreen;
     public SpecialMoveScreen smoveScreen;
     public StatisticsScreen statisticsScreen;
-    public InventoryUI inventoryUI;
     public VictoryScreen victoryScreen;
     public SettingsScreen settingsScreen;
 
+    // UI shared between Screens
+    public InventoryUI inventoryUI;
+    
+    
     // main bg
     public Background[] menuBackground;
 
@@ -81,9 +84,9 @@ public class Unlucky extends Game {
         fps.setFontScale(0.5f);
         fps.setVisible(player.settings.showFps);
 
-        inventoryUI = new InventoryUI(this, player, rm);
+        
         menuScreen = new MenuScreen(this, rm);
-        gameScreen = new GameScreen(this, rm);
+        worldScreen = new WorldScreen(this, rm);
         worldSelectScreen = new WorldSelectScreen(this, rm);
         levelSelectScreen = new LevelSelectScreen(this, rm);
         inventoryScreen = new InventoryScreen(this, rm);
@@ -93,6 +96,8 @@ public class Unlucky extends Game {
         victoryScreen = new VictoryScreen(this, rm);
         settingsScreen = new SettingsScreen(this, rm);
 
+        inventoryUI = new InventoryUI(this, worldScreen, player, rm);
+        
         // create parallax background
         menuBackground = new Background[3];
 
@@ -127,7 +132,7 @@ public class Unlucky extends Game {
 
         rm.dispose();
         menuScreen.dispose();
-        gameScreen.dispose();
+        worldScreen.dispose();
         worldSelectScreen.dispose();
         levelSelectScreen.dispose();
         inventoryScreen.dispose();

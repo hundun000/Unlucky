@@ -12,7 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.unlucky.effects.Moving;
 import com.unlucky.entity.Player;
-import com.unlucky.event.EventState;
+import com.unlucky.event.WorldState;
 import com.unlucky.inventory.Inventory;
 import com.unlucky.inventory.Item;
 import com.unlucky.main.Unlucky;
@@ -20,14 +20,15 @@ import com.unlucky.map.TileMap;
 import com.unlucky.map.WeatherType;
 import com.unlucky.resource.ResourceManager;
 import com.unlucky.resource.Util;
-import com.unlucky.screen.GameScreen;
+import com.unlucky.screen.WorldScreen;
+import com.unlucky.screen.game.WorldUI;
 
 /**
  * Handles button input and everything not in the game camera
  *
  * @author Ming Li
  */
-public class Hud extends UI {
+public class Hud extends WorldUI {
 
     // directional pad: index i 0 - down, 1 - up, 2 - right, 3 - left
     private ImageButton[] dirPad;
@@ -57,8 +58,8 @@ public class Hud extends UI {
     public Image shade;
     public Dialog settingsDialog;
 
-    public Hud(final GameScreen gameScreen, TileMap tileMap, final Player player, final ResourceManager rm) {
-        super(gameScreen, tileMap, player, rm);
+    public Hud(final WorldScreen worldScreen, final Player player, final ResourceManager rm) {
+        super(worldScreen.getGame(), worldScreen, player, rm);
 
         createDirPad();
         createOptionButtons();
@@ -94,32 +95,32 @@ public class Hud extends UI {
                     toggle(true);
 
                     // play music and sfx
-                    if (!player.settings.muteMusic) gameScreen.gameMap.mapTheme.play();
+                    if (!player.settings.muteMusic) worldScreen.worldData.mapTheme.play();
                     if (!player.settings.muteSfx) {
-                        if (gameScreen.gameMap.weather == WeatherType.RAIN) {
-                            gameScreen.gameMap.soundId = rm.lightrain.play(player.settings.sfxVolume);
-                            rm.lightrain.setLooping(gameScreen.gameMap.soundId, true);
+                        if (worldScreen.worldData.weather == WeatherType.RAIN) {
+                            worldScreen.worldData.soundId = rm.lightrain.play(player.settings.sfxVolume);
+                            rm.lightrain.setLooping(worldScreen.worldData.soundId, true);
                         }
-                        else if (gameScreen.gameMap.weather == WeatherType.HEAVY_RAIN || gameScreen.gameMap.weather == WeatherType.THUNDERSTORM) {
-                            gameScreen.gameMap.soundId = rm.heavyrain.play(player.settings.sfxVolume);
-                            rm.heavyrain.setLooping(gameScreen.gameMap.soundId, true);
+                        else if (worldScreen.worldData.weather == WeatherType.HEAVY_RAIN || worldScreen.worldData.weather == WeatherType.THUNDERSTORM) {
+                            worldScreen.worldData.soundId = rm.heavyrain.play(player.settings.sfxVolume);
+                            rm.heavyrain.setLooping(worldScreen.worldData.soundId, true);
                         }
                     }
 
-                    gameScreen.setCurrentEvent(EventState.MOVING);
+                    worldScreen.setWorldState(WorldState.MOVING);
                 }
                 else if (object.equals("settings")) {
                     game.settingsScreen.inGame = true;
-                    game.settingsScreen.worldIndex = gameScreen.gameMap.worldIndex;
-                    if (gameScreen.isClickable()) {
-                        gameScreen.setClickable(false);
-                        gameScreen.setBatchFade(false);
+                    game.settingsScreen.worldIndex = worldScreen.worldData.worldIndex;
+                    if (worldScreen.isClickable()) {
+                        worldScreen.setClickable(false);
+                        worldScreen.setBatchFade(false);
                         // fade out animation
                         stage.addAction(Actions.sequence(Actions.fadeOut(0.3f),
                             Actions.run(new Runnable() {
                                 @Override
                                 public void run() {
-                                    gameScreen.setClickable(true);
+                                    worldScreen.setClickable(true);
                                     game.setScreen(game.settingsScreen);
                                 }
                             })));
@@ -138,12 +139,12 @@ public class Hud extends UI {
         if (touchDown) {
             dirTime += dt;
             // quick tap to change direction
-            if (dirTime > 0 && dirTime <= 0.15f) player.getSelfAnimation().setAnimation(dirIndex);
+            if (dirTime > 0 && dirTime <= 0.15f) player.getSelfAnimationComponent().setAnimation(dirIndex);
             // move the player
             else movePlayer(dirIndex);
         }
         else {
-            player.getSelfAnimation().stopAnimation();
+            player.getSelfAnimationComponent().stopAnimation();
         }
 
         if (ld) {
@@ -177,8 +178,8 @@ public class Hud extends UI {
      * the player first enters the level.
      */
     public void startLevelDescriptor() {
-        int worldIndex = gameScreen.gameMap.worldIndex;
-        int levelIndex = gameScreen.gameMap.levelIndex;
+        int worldIndex = worldScreen.worldData.worldIndex;
+        int levelIndex = worldScreen.worldData.levelIndex;
         String worldName = rm.worlds.get(worldIndex).name;
         String levelName = rm.worlds.get(worldIndex).levels[levelIndex].name;
 
@@ -202,8 +203,8 @@ public class Hud extends UI {
      */
     public void toggle(boolean toggle) {
         if (toggle) {
-            gameScreen.getGame().fps.setPosition(5, 5);
-            stage.addActor(gameScreen.getGame().fps);
+            worldScreen.getGame().fps.setPosition(5, 5);
+            stage.addActor(worldScreen.getGame().fps);
         }
         for (int i = 0; i < 4; i++) dirPad[i].setVisible(toggle);
         for (int i = 0; i < 2; i++) optionButtons[i].setVisible(toggle);
@@ -334,20 +335,20 @@ public class Hud extends UI {
 
     private void backToMenu() {
         game.menuScreen.transitionIn = 0;
-        if (gameScreen.gameMap.weather != WeatherType.NORMAL) {
-            rm.lightrain.stop(gameScreen.gameMap.soundId);
-            rm.heavyrain.stop(gameScreen.gameMap.soundId);
+        if (worldScreen.worldData.weather != WeatherType.NORMAL) {
+            rm.lightrain.stop(worldScreen.worldData.soundId);
+            rm.heavyrain.stop(worldScreen.worldData.soundId);
         }
-        if (gameScreen.isClickable()) {
-            gameScreen.setClickable(false);
-            gameScreen.setBatchFade(false);
+        if (worldScreen.isClickable()) {
+            worldScreen.setClickable(false);
+            worldScreen.setBatchFade(false);
             // fade out animation
             stage.addAction(Actions.sequence(Actions.fadeOut(0.3f),
                 Actions.run(new Runnable() {
                     @Override
                     public void run() {
-                        gameScreen.setClickable(true);
-                        gameScreen.gameMap.mapTheme.stop();
+                        worldScreen.setClickable(true);
+                        worldScreen.worldData.mapTheme.stop();
                         game.setScreen(game.menuScreen);
                     }
                 })));
@@ -355,10 +356,10 @@ public class Hud extends UI {
     }
 
     private void loseObtained() {
-        player.addGold(-gameScreen.gameMap.goldObtained);
-        player.addExp(-gameScreen.gameMap.expObtained);
-        if (gameScreen.gameMap.itemsObtained.size != 0) {
-            for (Item item : gameScreen.gameMap.itemsObtained) {
+        player.addGold(-worldScreen.worldData.goldObtained);
+        player.addExp(-worldScreen.worldData.expObtained);
+        if (worldScreen.worldData.itemsObtained.size != 0) {
+            for (Item item : worldScreen.worldData.itemsObtained) {
                 for (int i = 0; i < Inventory.NUM_SLOTS; i++) {
                     if (player.inventory.getItem(i) == item)
                         player.inventory.removeItem(i);
@@ -392,9 +393,9 @@ public class Hud extends UI {
                     loseObtained();
                     player.setHp(player.getMaxHp());
                     player.inMap = false;
-                    if (gameScreen.gameMap.weather != WeatherType.NORMAL) {
-                        rm.lightrain.stop(gameScreen.gameMap.soundId);
-                        rm.heavyrain.stop(gameScreen.gameMap.soundId);
+                    if (worldScreen.worldData.weather != WeatherType.NORMAL) {
+                        rm.lightrain.stop(worldScreen.worldData.soundId);
+                        rm.heavyrain.stop(worldScreen.worldData.soundId);
                     }
                     backToMenu();
                 }
@@ -425,7 +426,7 @@ public class Hud extends UI {
     }
 
     private void movePlayer(int dir) {
-        if (player.canMove()) player.getSelfAnimation().setAnimation(dir);
+        if (player.canMove()) player.getSelfAnimationComponent().setAnimation(dir);
         if (player.canMove() && !player.nextTileBlocked(dir)) {
             player.move(dir);
         }
@@ -440,9 +441,9 @@ public class Hud extends UI {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 toggle(false);
-                gameScreen.setCurrentEvent(EventState.INVENTORY);
-                gameScreen.getGame().inventoryUI.init(false, null);
-                gameScreen.getGame().inventoryUI.start();
+                worldScreen.setWorldState(WorldState.INVENTORY);
+                worldScreen.getGame().inventoryUI.initForNewScreen(false, null);
+                worldScreen.getGame().inventoryUI.start();
             }
         });
 
@@ -454,13 +455,13 @@ public class Hud extends UI {
                 toggle(false);
 
                 // pause music and sfx
-                gameScreen.gameMap.mapTheme.pause();
-                if (gameScreen.gameMap.weather != WeatherType.NORMAL) {
-                    rm.lightrain.stop(gameScreen.gameMap.soundId);
-                    rm.heavyrain.stop(gameScreen.gameMap.soundId);
+                worldScreen.worldData.mapTheme.pause();
+                if (worldScreen.worldData.weather != WeatherType.NORMAL) {
+                    rm.lightrain.stop(worldScreen.worldData.soundId);
+                    rm.heavyrain.stop(worldScreen.worldData.soundId);
                 }
 
-                gameScreen.setCurrentEvent(EventState.PAUSE);
+                worldScreen.setWorldState(WorldState.PAUSE);
                 settingsDialog.show(stage);
             }
         });

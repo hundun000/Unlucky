@@ -3,40 +3,35 @@ package com.unlucky.screen.game;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.unlucky.entity.Player;
-import com.unlucky.event.Battle;
-import com.unlucky.event.EventState;
+import com.unlucky.event.BattleData;
+import com.unlucky.event.WorldState;
 import com.unlucky.main.Unlucky;
+import com.unlucky.map.TileMap;
 import com.unlucky.map.WeatherType;
 import com.unlucky.resource.ResourceManager;
 import com.unlucky.resource.Util;
-import com.unlucky.screen.GameScreen;
-import com.unlucky.ui.battleui.BattleUIHandler;
+import com.unlucky.screen.WorldScreen;
+import com.unlucky.ui.battleui.BattleUI;
 import com.unlucky.ui.Hud;
+import com.unlucky.ui.UI;
 
 /**
  * Renders a random transition screen between two EventStates
  *
  * @author Ming Li
  */
-public class TransitionScreen {
+public class ScreenTransitionUI extends WorldUI {
 
-    private GameScreen gameScreen;
-    private Battle battle;
-    private BattleUIHandler uiHandler;
+    private BattleUI battleUI;
     private Hud hud;
-    private Player player;
-    private ResourceManager rm;
 
     // determine which one to render when entering and exiting battle
     public boolean renderMap = false;
     public boolean renderBattle = false;
     public boolean renderLevelUp = false;
 
-    // render black rectangles
-    private ShapeRenderer shapeRenderer;
-
-    private EventState prev;
-    private EventState next;
+    private WorldState prev;
+    private WorldState next;
     private boolean shouldStart = false;
     private int transitionIndex;
 
@@ -59,15 +54,11 @@ public class TransitionScreen {
     private float x0, x1;
     private float y0, y1;
 
-    public TransitionScreen(GameScreen gameScreen, Battle battle, BattleUIHandler uiHandler, Hud hud, Player player, ResourceManager rm) {
-        this.gameScreen = gameScreen;
-        this.battle = battle;
-        this.uiHandler = uiHandler;
+    public ScreenTransitionUI(WorldScreen worldScreen, BattleUI battleUI, TileMap tileMap, Hud hud, Player player, ResourceManager rm) {
+        super(worldScreen.getGame(), worldScreen, player, rm);
+        this.battleUI = battleUI;
         this.hud = hud;
-        this.player = player;
-        this.rm = rm;
 
-        shapeRenderer = new ShapeRenderer();
 
         transitionIndex = MathUtils.random(NUM_TRANSITIONS - 1);
     }
@@ -78,21 +69,22 @@ public class TransitionScreen {
      * @param prev
      * @param next
      */
-    public void start(EventState prev, EventState next) {
+    public void start(WorldState prev, WorldState next) {
         shouldStart = true;
         this.prev = prev;
         this.next = next;
 
         // set rendering
-        if (prev == EventState.MOVING && next == EventState.BATTLING) renderMap = true;
-        else if (prev == EventState.MOVING && next == EventState.MOVING) renderMap = true;
-        else if (prev == EventState.BATTLING) renderBattle = true;
-        else if (prev == EventState.LEVEL_UP && next == EventState.MOVING) renderLevelUp = true;
+        if (prev == WorldState.MOVING && next == WorldState.BATTLING) renderMap = true;
+        else if (prev == WorldState.MOVING && next == WorldState.MOVING) renderMap = true;
+        else if (prev == WorldState.BATTLING) renderBattle = true;
+        else if (prev == WorldState.LEVEL_UP && next == WorldState.MOVING) renderLevelUp = true;
 
-        if (prev == EventState.MOVING && next == EventState.MOVING)
+        if (prev == WorldState.MOVING && next == WorldState.MOVING) {
             transitionIndex = MathUtils.random(2, 3);
-        else
+        } else {
             transitionIndex = MathUtils.random(NUM_TRANSITIONS - 1);
+        }
 
         switch (transitionIndex) {
             case 0: x = 0; break;
@@ -112,57 +104,57 @@ public class TransitionScreen {
         renderMap = renderBattle = renderLevelUp = false;
 
         // transition into battle
-        if (prev == EventState.MOVING && next == EventState.BATTLING) {
-            battle.begin(player.getOpponent());
+        if (prev == WorldState.MOVING && next == WorldState.BATTLING) {
+            battleUI.beginBattle(player.getOpponent());
             if (!player.settings.muteMusic) {
                 rm.battleTheme.setLooping(true);
                 rm.battleTheme.play();
             }
-            uiHandler.engage(player.getOpponent());
+            battleUI.engage(player.getOpponent());
             hud.toggle(false);
-            gameScreen.setCurrentEvent(EventState.BATTLING);
+            worldScreen.setWorldState(WorldState.BATTLING);
         }
-        else if (prev == EventState.MOVING && next == EventState.MOVING) {
+        else if (prev == WorldState.MOVING && next == WorldState.MOVING) {
             player.teleport();
-            gameScreen.updateCamera();
-            gameScreen.setCurrentEvent(EventState.MOVING);
+            worldScreen.updateCamera();
+            worldScreen.setWorldState(WorldState.MOVING);
             hud.toggle(true);
             player.finishTeleporting();
         }
         // transition out of battle
-        else if (prev == EventState.BATTLING && next == EventState.MOVING) {
-            battle.end();
-            if (!player.settings.muteMusic) gameScreen.gameMap.mapTheme.play();
+        else if (prev == WorldState.BATTLING && next == WorldState.MOVING) {
+            battleUI.endBattle();
+            if (!player.settings.muteMusic) worldScreen.worldData.mapTheme.play();
             if (!player.settings.muteSfx) {
-                if (gameScreen.gameMap.weather == WeatherType.RAIN) {
-                    gameScreen.gameMap.soundId = rm.lightrain.play(player.settings.sfxVolume);
-                    rm.lightrain.setLooping(gameScreen.gameMap.soundId, true);
+                if (worldScreen.worldData.weather == WeatherType.RAIN) {
+                    worldScreen.worldData.soundId = rm.lightrain.play(player.settings.sfxVolume);
+                    rm.lightrain.setLooping(worldScreen.worldData.soundId, true);
                 }
-                else if (gameScreen.gameMap.weather == WeatherType.HEAVY_RAIN || gameScreen.gameMap.weather == WeatherType.THUNDERSTORM) {
-                    gameScreen.gameMap.soundId = rm.heavyrain.play(player.settings.sfxVolume);
-                    rm.heavyrain.setLooping(gameScreen.gameMap.soundId, true);
+                else if (worldScreen.worldData.weather == WeatherType.HEAVY_RAIN || worldScreen.worldData.weather == WeatherType.THUNDERSTORM) {
+                    worldScreen.worldData.soundId = rm.heavyrain.play(player.settings.sfxVolume);
+                    rm.heavyrain.setLooping(worldScreen.worldData.soundId, true);
                 }
             }
         }
         // transition out of level up screen
-        else if (prev == EventState.LEVEL_UP && next == EventState.MOVING) {
-            battle.end();
-            if (!player.settings.muteMusic) gameScreen.gameMap.mapTheme.play();
+        else if (prev == WorldState.LEVEL_UP && next == WorldState.MOVING) {
+            battleUI.endBattle();
+            if (!player.settings.muteMusic) worldScreen.worldData.mapTheme.play();
             if (!player.settings.muteSfx) {
-                if (gameScreen.gameMap.weather == WeatherType.RAIN) {
-                    gameScreen.gameMap.soundId = rm.lightrain.play(player.settings.sfxVolume);
-                    rm.lightrain.setLooping(gameScreen.gameMap.soundId, true);
+                if (worldScreen.worldData.weather == WeatherType.RAIN) {
+                    worldScreen.worldData.soundId = rm.lightrain.play(player.settings.sfxVolume);
+                    rm.lightrain.setLooping(worldScreen.worldData.soundId, true);
                 }
-                else if (gameScreen.gameMap.weather == WeatherType.HEAVY_RAIN || gameScreen.gameMap.weather == WeatherType.THUNDERSTORM) {
-                    gameScreen.gameMap.soundId = rm.heavyrain.play(player.settings.sfxVolume);
-                    rm.heavyrain.setLooping(gameScreen.gameMap.soundId, true);
+                else if (worldScreen.worldData.weather == WeatherType.HEAVY_RAIN || worldScreen.worldData.weather == WeatherType.THUNDERSTORM) {
+                    worldScreen.worldData.soundId = rm.heavyrain.play(player.settings.sfxVolume);
+                    rm.heavyrain.setLooping(worldScreen.worldData.soundId, true);
                 }
             }
         }
         // transition into death screen
-        else if (prev == EventState.BATTLING && next == EventState.DEATH) {
-            battle.end();
-            gameScreen.die();
+        else if (prev == WorldState.BATTLING && next == WorldState.DEATH) {
+            battleUI.endBattle();
+            worldScreen.die();
         }
     }
 
@@ -172,43 +164,55 @@ public class TransitionScreen {
                 // horizontal slide l2r
                 case 0:
                     x += Util.TRANSITION_SCREEN_SPEED * dt;
-                    if (x >= Unlucky.V_WIDTH) end();
+                    if (x >= Unlucky.V_WIDTH) {
+                        end();
+                    }
                     break;
                 // vertical slide t2b
                 case 1:
                     y -= Util.TRANSITION_SCREEN_SPEED * dt;
-                    if (y <= 0) end();
+                    if (y <= 0) {
+                        end();
+                    }
                     break;
                 // horizontal strips
                 case 2:
                     x0 += Util.TRANSITION_SCREEN_SPEED * dt;
                     x1 -= Util.TRANSITION_SCREEN_SPEED * dt;
-                    if (x0 >= Unlucky.V_WIDTH && x1 <= 0) end();
+                    if (x0 >= Unlucky.V_WIDTH && x1 <= 0) {
+                        end();
+                    }
                     break;
                 // vertical strips
                 case 3:
                     y0 += Util.TRANSITION_SCREEN_SPEED * dt;
                     y1 -= Util.TRANSITION_SCREEN_SPEED * dt;
-                    if (y0 >= Unlucky.V_HEIGHT && y1 <= 0) end();
+                    if (y0 >= Unlucky.V_HEIGHT && y1 <= 0) {
+                        end();
+                    }
                     break;
                 // horizontal split
                 case 4:
                     x0 += (Util.TRANSITION_SCREEN_SPEED / 2) * dt;
                     x1 -= (Util.TRANSITION_SCREEN_SPEED / 2) * dt;
-                    if (x0 >= Unlucky.V_WIDTH / 2 && x1 <= Unlucky.V_WIDTH / 2) end();
+                    if (x0 >= Unlucky.V_WIDTH / 2 && x1 <= Unlucky.V_WIDTH / 2) {
+                        end();
+                    }
                     break;
                 // vertical split
                 case 5:
                     y0 += (Util.TRANSITION_SCREEN_SPEED / 2) * dt;
                     y1 -= (Util.TRANSITION_SCREEN_SPEED / 2) * dt;
-                    if (y0 >= Unlucky.V_HEIGHT / 2 && y1 <= Unlucky.V_HEIGHT / 2) end();
+                    if (y0 >= Unlucky.V_HEIGHT / 2 && y1 <= Unlucky.V_HEIGHT / 2) {
+                        end();
+                    }
                     break;
             }
         }
     }
 
     public void render(float dt) {
-        shapeRenderer.setProjectionMatrix(gameScreen.battleUIHandler.getStage().getCamera().combined);
+        shapeRenderer.setProjectionMatrix(worldScreen.battleUI.getStage().getCamera().combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
         shapeRenderer.setColor(0, 0, 0, 1);

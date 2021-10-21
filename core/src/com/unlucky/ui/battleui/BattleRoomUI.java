@@ -19,12 +19,12 @@ import com.unlucky.effects.Particle;
 import com.unlucky.effects.ParticleFactory;
 import com.unlucky.entity.Entity;
 import com.unlucky.entity.Player;
-import com.unlucky.event.Battle;
+import com.unlucky.event.BattleData;
 import com.unlucky.map.TileMap;
 import com.unlucky.map.WeatherType;
 import com.unlucky.resource.ResourceManager;
 import com.unlucky.resource.Util;
-import com.unlucky.screen.GameScreen;
+import com.unlucky.screen.WorldScreen;
 import com.unlucky.ui.MovingImageUI;
 
 /**
@@ -32,9 +32,8 @@ import com.unlucky.ui.MovingImageUI;
  *
  * @author Ming Li
  */
-public class BattleScene extends BattleUI {
+public class BattleRoomUI extends SubBattleUI {
 
-    private Stage stage;
 
     // Health bars
     // player
@@ -83,11 +82,11 @@ public class BattleScene extends BattleUI {
 
     private boolean sfxPlaying = false;
 
-    public BattleScene(GameScreen gameScreen, TileMap tileMap, Player player, Battle battle,
-                       BattleUIHandler uiHandler, Stage stage, ResourceManager rm) {
-        super(gameScreen, tileMap, player, battle, uiHandler, rm);
+    public BattleRoomUI(WorldScreen worldScreen, Player player, BattleData battleData,
+                       BattleUI uiHandler, Stage stage, ResourceManager rm) {
+        super(worldScreen, player, battleData, uiHandler, stage, rm);
 
-        this.stage = stage;
+        
 
         BitmapFont font = rm.pixel10;
         Label.LabelStyle ls = new Label.LabelStyle(font, new Color(255, 255, 255, 255));
@@ -135,8 +134,8 @@ public class BattleScene extends BattleUI {
     }
 
     public void toggle(boolean toggle) {
-        gameScreen.getGame().fps.setPosition(5, 115);
-        stage.addActor(gameScreen.getGame().fps);
+        worldScreen.getGame().fps.setPosition(5, 115);
+        stage.addActor(worldScreen.getGame().fps);
 
         playerHud.setVisible(toggle);
         playerHudLabel.setVisible(toggle);
@@ -144,21 +143,21 @@ public class BattleScene extends BattleUI {
         playerHud.start();
 
         if (toggle) {
-            enemyHpBar.setEntity(battle.opponent);
+            enemyHpBar.setEntity(battleData.opponent);
 
-            if (battle.opponent.isBoss()) {
+            if (battleData.opponent.isBoss()) {
                 // boss's name is always red
                 enemyHudLabel.setStyle(strongest);
             }
             else {
-                int diff = battle.opponent.getLevel() - player.getLevel();
+                int diff = battleData.opponent.getLevel() - player.getLevel();
                 if (diff <= -3) enemyHudLabel.setStyle(weakest);
                 else if (diff == -1 || diff == -2) enemyHudLabel.setStyle(weaker);
                 else if (diff == 0) enemyHudLabel.setStyle(same);
                 else if (diff == 1 || diff == 2) enemyHudLabel.setStyle(stronger);
                 else if (diff >= 3) enemyHudLabel.setStyle(strongest);
             }
-            enemyHudLabel.setText(battle.opponent.getId());
+            enemyHudLabel.setText(battleData.opponent.getId());
         }
 
         enemyHud.setVisible(toggle);
@@ -168,14 +167,14 @@ public class BattleScene extends BattleUI {
         playerSprite.start();
         enemySprite.start();
 
-        if (gameScreen.gameMap.weather == WeatherType.RAIN) {
+        if (worldScreen.worldData.weather == WeatherType.RAIN) {
             factory.set(Particle.STATIC_RAINDROP, 40, new Vector2(Util.RAINDROP_X, -100));
-        } else if (gameScreen.gameMap.weather == WeatherType.HEAVY_RAIN ||
-                gameScreen.gameMap.weather == WeatherType.THUNDERSTORM) {
+        } else if (worldScreen.worldData.weather == WeatherType.HEAVY_RAIN ||
+                worldScreen.worldData.weather == WeatherType.THUNDERSTORM) {
             factory.set(Particle.STATIC_RAINDROP, 75, new Vector2(Util.RAINDROP_X, -120));
-        } else if (gameScreen.gameMap.weather == WeatherType.SNOW) {
+        } else if (worldScreen.worldData.weather == WeatherType.SNOW) {
             factory.set(Particle.SNOWFLAKE, 100, new Vector2(Util.SNOWFLAKE_X, -60));
-        } else if (gameScreen.gameMap.weather == WeatherType.BLIZZARD) {
+        } else if (worldScreen.worldData.weather == WeatherType.BLIZZARD) {
             factory.set(Particle.SNOWFLAKE, 300, new Vector2(Util.SNOWFLAKE_X + 50, -80));
         }
 
@@ -202,11 +201,11 @@ public class BattleScene extends BattleUI {
         playerHud.update(dt);
         enemyHud.update(dt);
 
-        if (gameScreen.gameMap.weather != WeatherType.NORMAL) factory.update(dt);
+        if (worldScreen.worldData.weather != WeatherType.NORMAL) factory.update(dt);
 
         // entity sprite animations
-        player.getBattleAnimation().update(dt);
-        if (battle.opponent.getBattleAnimation() != null) battle.opponent.getBattleAnimation().update(dt);
+        player.getBattleAnimationComponent().update(dt);
+        if (battleData.opponent.getBattleAnimationComponent() != null) battleData.opponent.getBattleAnimationComponent().update(dt);
 
         playerSprite.update(dt);
         enemySprite.update(dt);
@@ -217,7 +216,7 @@ public class BattleScene extends BattleUI {
             playerSprite.position.y = dy;
             if (playerSprite.position.y < -48) playerSprite.position.y = -48;
         }
-        if (battle.opponent.isDead()) {
+        if (battleData.opponent.isDead()) {
             float dy = enemySprite.position.y - 2;
             enemySprite.position.y = dy;
             if (enemySprite.position.y < -48) enemySprite.position.y = -48;
@@ -245,10 +244,10 @@ public class BattleScene extends BattleUI {
 
         playerHudLabel.setText("HP: " + player.getHp() + "/" + player.getMaxHp());
         if (player.settings.showEnemyLevels) {
-            enemyHudLabel.setText("LV." + battle.opponent.getLevel() + " " + battle.opponent.getId());
+            enemyHudLabel.setText("LV." + battleData.opponent.getLevel() + " " + battleData.opponent.getId());
         }
         else {
-            enemyHudLabel.setText(battle.opponent.getId());
+            enemyHudLabel.setText(battleData.opponent.getId());
         }
 
         // show health bar animation after an entity uses its move
@@ -265,7 +264,7 @@ public class BattleScene extends BattleUI {
         }
 
         if (player.getMoveUsed() != null) updateBattleAnimations(player, dt);
-        if (battle.opponent.getMoveUsed() != null) updateBattleAnimations(battle.opponent, dt);
+        if (battleData.opponent.getMoveUsed() != null) updateBattleAnimations(battleData.opponent, dt);
     }
 
     /**
@@ -325,18 +324,18 @@ public class BattleScene extends BattleUI {
     }
 
     public void render(float dt) {
-        gameScreen.getBatch().begin();
+        worldScreen.getBatch().begin();
         if (renderPlayer) {
-            gameScreen.getBatch().draw(player.getBattleAnimation().getKeyFrame(true), playerSprite.position.x, playerSprite.position.y);
+            worldScreen.getBatch().draw(player.getBattleAnimationComponent().getKeyFrame(true), playerSprite.position.x, playerSprite.position.y);
         }
         if (renderEnemy) {
-            TextureRegion r = battle.opponent.getBattleAnimation().getKeyFrame(true);
-            if (battle.opponent.isBoss()) {
-                gameScreen.getBatch().draw(r, enemySprite.position.x + (48 - battle.opponent.battleSize) / 2, enemySprite.position.y,
-                        battle.opponent.battleSize, battle.opponent.battleSize);
+            TextureRegion r = battleData.opponent.getBattleAnimationComponent().getKeyFrame(true);
+            if (battleData.opponent.isBoss()) {
+                worldScreen.getBatch().draw(r, enemySprite.position.x + (48 - battleData.opponent.battleSize) / 2, enemySprite.position.y,
+                        battleData.opponent.battleSize, battleData.opponent.battleSize);
             }
             else {
-                gameScreen.getBatch().draw(r, enemySprite.position.x, enemySprite.position.y);
+                worldScreen.getBatch().draw(r, enemySprite.position.x, enemySprite.position.y);
             }
         }
 
@@ -344,33 +343,33 @@ public class BattleScene extends BattleUI {
         // player side
         if (player.getMoveUsed() != null) {
             if (player.getMoveUsed().isAttack()) {
-                gameScreen.getBatch().draw(attackAnims.get(player.getMoveUsed()).getKeyFrame(false), 127, 57);
+                worldScreen.getBatch().draw(attackAnims.get(player.getMoveUsed()).getKeyFrame(false), 127, 57);
             } else if (player.getMoveUsed() == MoveType.HEALING) {
-                gameScreen.getBatch().draw(healAnim.getKeyFrame(false), 35, 50);
+                worldScreen.getBatch().draw(healAnim.getKeyFrame(false), 35, 50);
             }
         }
         // enemy side
-        if (battle.opponent.getMoveUsed() != null) {
-            if (battle.opponent.getMoveUsed().isAttack()) {
-                gameScreen.getBatch().draw(attackAnims.get(battle.opponent.getMoveUsed()).getKeyFrame(false), 42, 57);
-            } else if (battle.opponent.getMoveUsed() == MoveType.HEALING) {
-                gameScreen.getBatch().draw(healAnim.getKeyFrame(false), 120, 50);
+        if (battleData.opponent.getMoveUsed() != null) {
+            if (battleData.opponent.getMoveUsed().isAttack()) {
+                worldScreen.getBatch().draw(attackAnims.get(battleData.opponent.getMoveUsed()).getKeyFrame(false), 42, 57);
+            } else if (battleData.opponent.getMoveUsed() == MoveType.HEALING) {
+                worldScreen.getBatch().draw(healAnim.getKeyFrame(false), 120, 50);
             }
         }
 
         // render weather and lighting conditions if any
-        if (gameScreen.gameMap.weather != WeatherType.NORMAL) factory.render(gameScreen.getBatch());
+        if (worldScreen.worldData.weather != WeatherType.NORMAL) factory.render(worldScreen.getBatch());
 
-        if (gameScreen.gameMap.isDark) {
-            gameScreen.getBatch().setBlendFunction(GL20.GL_DST_COLOR, GL20.GL_ONE_MINUS_SRC_ALPHA);
-            gameScreen.getBatch().draw(rm.battledarkness, 0, 0);
-            gameScreen.getBatch().setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+        if (worldScreen.worldData.isDark) {
+            worldScreen.getBatch().setBlendFunction(GL20.GL_DST_COLOR, GL20.GL_ONE_MINUS_SRC_ALPHA);
+            worldScreen.getBatch().draw(rm.battledarkness, 0, 0);
+            worldScreen.getBatch().setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
         }
 
         // render player and enemy status icons
-        player.statusEffects.render(gameScreen.getBatch());
-        battle.opponent.statusEffects.render(gameScreen.getBatch());
-        gameScreen.getBatch().end();
+        player.statusEffects.render(worldScreen.getBatch());
+        battleData.opponent.statusEffects.render(worldScreen.getBatch());
+        worldScreen.getBatch().end();
 
         playerHpBar.render(dt);
         enemyHpBar.render(dt);

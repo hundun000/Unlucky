@@ -5,7 +5,7 @@ package com.unlucky.event;
  *
  * @author Ming Li
  */
-public enum BattleEvent {
+public enum BattlePhase {
 
     // placeholder event for nothing happening
     NONE,

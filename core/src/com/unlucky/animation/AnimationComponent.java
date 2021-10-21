@@ -22,6 +22,8 @@ public class AnimationComponent {
     private CustomAnimation[] animations;
     private TextureRegion[][] animationFrames;
 
+    private boolean pause = false;
+    
     /**
      * Sets up for single animations
      *
@@ -92,6 +94,9 @@ public class AnimationComponent {
         currentAnimation = animations[0]; // initially set frame to idle down facing frame
     }
 
+    /**
+     * do nothing if this.pause
+     */
     public void update(float dt) {
         currentAnimation.update(dt);
         currentAnimation.play();
@@ -112,6 +117,14 @@ public class AnimationComponent {
 
     public TextureRegion getKeyFrame(boolean looping) {
         return currentAnimation.getKeyFrame(looping);
+    }
+    
+    public void setPause(boolean pause) {
+        this.pause = pause;
+    }
+    
+    public boolean isPause() {
+        return pause;
     }
 
 
